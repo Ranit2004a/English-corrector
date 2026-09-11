@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Speaking Practice - Daily Dashboard</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..900;1,300..900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-bright": "#f9f9f9",
+            "tertiary-container": "#1d1b1a",
+            "surface-container-highest": "#e2e2e2",
+            "on-error-container": "#93000a",
+            "surface-variant": "#e2e2e2",
+            "tertiary-fixed": "#e6e1df",
+            "outline-variant": "#c4c7c7",
+            "on-primary": "#ffffff",
+            "background": "#f9f9f9",
+            "on-primary-fixed-variant": "#474646",
+            "error-container": "#ffdad6",
+            "surface-dim": "#dadada",
+            "on-surface": "#1a1c1c",
+            "on-tertiary-fixed": "#1d1b1a",
+            "secondary-container": "#e3e1ec",
+            "inverse-on-surface": "#f0f1f1",
+            "on-tertiary": "#ffffff",
+            "outline": "#747878",
+            "on-secondary": "#ffffff",
+            "inverse-primary": "#c8c6c5",
+            "on-primary-fixed": "#1c1b1b",
+            "inverse-surface": "#2f3131",
+            "secondary": "#5d5e66",
+            "primary-fixed-dim": "#c8c6c5",
+            "tertiary-fixed-dim": "#cac6c3",
+            "on-surface-variant": "#444748",
+            "on-tertiary-fixed-variant": "#484645",
+            "surface-container": "#eeeeee",
+            "error": "#ba1a1a",
+            "surface-container-low": "#f3f3f4",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-fixed-variant": "#46464e",
+            "tertiary": "#000000",
+            "surface": "#f9f9f9",
+            "surface-container-high": "#e8e8e8",
+            "secondary-fixed-dim": "#c6c5cf",
+            "on-background": "#1a1c1c",
+            "primary-container": "#1c1b1b",
+            "on-error": "#ffffff",
+            "on-primary-container": "#858383",
+            "on-tertiary-container": "#868381",
+            "primary": "#000000",
+            "on-secondary-container": "#63646c",
+            "secondary-fixed": "#e3e1ec",
+            "primary-fixed": "#e5e2e1",
+            "surface-tint": "#5f5e5e",
+            "on-secondary-fixed": "#1a1b22"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "margin": "1.25rem",
+            "space-xl": "2.5rem",
+            "space-md": "1rem",
+            "gutter": "1rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "sans": ["Hanken Grotesk", "sans-serif"],
+            "body-md": ["Hanken Grotesk"],
+            "body-sm": ["Hanken Grotesk"],
+            "body-lg": ["Hanken Grotesk"],
+            "display-lg": ["Hanken Grotesk"],
+            "headline-md": ["Hanken Grotesk"],
+            "display-lg-mobile": ["Hanken Grotesk"],
+            "label-sm": ["Hanken Grotesk"],
+            "label-lg": ["Hanken Grotesk"],
+            "headline-sm": ["Hanken Grotesk"],
+            "label-md": ["Hanken Grotesk"],
+            "headline-lg": ["Hanken Grotesk"]
+          },
+          "fontSize": {
+            "body-md": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-lg": ["18px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "display-lg": ["44px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "600" }],
+            "headline-md": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "display-lg-mobile": ["34px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "headline-lg": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-lowest text-on-surface font-sans antialiased selection:bg-primary selection:text-on-primary">
+<main class="mx-auto min-h-screen max-w-md bg-surface-container-lowest border-x border-surface-container flex flex-col justify-between">
+<div class="flex flex-col">
+<!-- Top Navigation / User Header -->
+<header class="flex items-center justify-between px-6 pt-8 pb-5 border-b border-surface-container">
+<div class="flex items-center gap-3.5">
+<div class="relative size-10 rounded-full overflow-hidden ring-1 ring-surface-container-highest">
+<img class="w-full h-full object-cover grayscale" data-alt="Monochrome studio portrait of Ranit smiling softly in natural architectural lighting, clean minimal backdrop, warm contrast, shot on black and white 35mm film aesthetic with sharp clarity and subtle grain." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8D9e76Sp4D9fVqOp9z-jcyjtv4ts55oQ8wQ-2q_2QGaMMxv8cUPBpUb87vICSA9YID3b7EG2BDEnKyvhPsW-ydMGIMm1fpdSAT1uttSn0vB8PUl5xJwXR0dRE1XRN0f30ssvsYu8942_IiSZ3ZWuuqFKL29fE-HZ3TdLnccvwUZCKSbQUk_VkpfVRUz8JhqyWQ3ysxafdlMvQ8mprc3cHVpYwrb6SFsWynn5Y8-JYVv26U3JKyqI4HA"/>
+</div>
+<div>
+<h1 class="font-headline-sm text-on-surface tracking-tight font-semibold">Good evening, Ranit</h1>
+<p class="font-label-md text-secondary">Ready for your evening warm-up?</p>
+</div>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-surface-container bg-surface-container-low">
+<span class="material-symbols-outlined text-primary text-[15px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-sm uppercase tracking-wider text-on-surface font-semibold">7 Days</span>
+</div>
+</header>
+<!-- Content Container -->
+<div class="px-6 py-6 flex flex-col gap-8">
+<!-- Today's Goal -->
+<section class="flex flex-col gap-3">
+<div class="flex items-baseline justify-between">
+<h2 class="font-label-lg uppercase tracking-wider text-secondary font-semibold">Today's Goal</h2>
+<div class="font-body-sm text-on-surface">
+<span class="font-semibold text-primary">12</span> <span class="text-secondary">/ 20 mins</span>
+</div>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-300" style="width: 60%;"></div>
+</div>
+<div class="flex justify-between items-center text-secondary">
+<p class="font-label-md">8 mins left to preserve streak</p>
+<span class="font-label-md font-medium text-primary">60%</span>
+</div>
+</section>
+<!-- Primary CTA: Daily Conversation -->
+<section>
+<div class="bg-primary text-on-primary rounded-xl p-6 flex flex-col justify-between relative overflow-hidden group">
+<div class="flex justify-between items-start mb-6">
+<div class="size-10 rounded-full border border-primary-container bg-surface-tint/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-[20px]">mic</span>
+</div>
+<span class="font-label-sm uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-surface-tint/40 text-surface-variant">Recommended</span>
+</div>
+<div class="mb-6">
+<h3 class="font-headline-md text-on-primary font-semibold tracking-tight mb-1">Daily Conversation</h3>
+<p class="font-body-sm text-surface-variant">Practice natural back-and-forth speaking tailored to your pace today.</p>
+</div>
+<button class="w-full h-11 bg-on-primary text-primary font-label-lg font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-surface-bright active:scale-[0.99] transition-all">
+<span>Start speaking (5 min)</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- Weekly Summary: Editorial Metric Table -->
+<section class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<h2 class="font-label-lg uppercase tracking-wider text-secondary font-semibold">This Week's Activity</h2>
+<span class="font-label-md text-secondary">Mon – Sun</span>
+</div>
+<div class="grid grid-cols-3 divide-x divide-surface-container border border-surface-container rounded-xl bg-surface-container-lowest p-1 text-center">
+<div class="py-3 px-2 flex flex-col">
+<span class="font-label-md text-secondary">Total Time</span>
+<span class="font-headline-sm font-semibold text-on-surface mt-0.5">84m</span>
+<span class="font-label-sm text-secondary mt-1 font-medium">+14m vs last</span>
+</div>
+<div class="py-3 px-2 flex flex-col">
+<span class="font-label-md text-secondary">Fluency</span>
+<span class="font-headline-sm font-semibold text-on-surface mt-0.5">92%</span>
+<span class="font-label-sm text-secondary mt-1 font-medium">Consistent</span>
+</div>
+<div class="py-3 px-2 flex flex-col">
+<span class="font-label-md text-secondary">Sessions</span>
+<span class="font-headline-sm font-semibold text-on-surface mt-0.5">14</span>
+<span class="font-label-sm text-secondary mt-1 font-medium">2 daily avg</span>
+</div>
+</div>
+</section>
+<!-- Suggested Topics -->
+<section class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<h2 class="font-label-lg uppercase tracking-wider text-secondary font-semibold">Suggested Topics</h2>
+<button class="font-label-md text-primary font-medium hover:underline">View all</button>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<!-- Topic 1 -->
+<button class="flex flex-col p-4 border border-surface-container rounded-xl text-left hover:border-on-surface transition-colors bg-surface-container-lowest">
+<div class="size-8 rounded-lg border border-surface-container flex items-center justify-center mb-3 text-primary">
+<span class="material-symbols-outlined text-[18px]">wb_sunny</span>
+</div>
+<span class="font-label-lg font-semibold text-on-surface">Daily Life</span>
+<span class="font-label-md text-secondary mt-0.5">Morning routines &amp; habits</span>
+</button>
+<!-- Topic 2 -->
+<button class="flex flex-col p-4 border border-surface-container rounded-xl text-left hover:border-on-surface transition-colors bg-surface-container-lowest">
+<div class="size-8 rounded-lg border border-surface-container flex items-center justify-center mb-3 text-primary">
+<span class="material-symbols-outlined text-[18px]">work_outline</span>
+</div>
+<span class="font-label-lg font-semibold text-on-surface">Job Interview</span>
+<span class="font-label-md text-secondary mt-0.5">Role pitching &amp; stories</span>
+</button>
+<!-- Topic 3 -->
+<button class="flex flex-col p-4 border border-surface-container rounded-xl text-left hover:border-on-surface transition-colors bg-surface-container-lowest">
+<div class="size-8 rounded-lg border border-surface-container flex items-center justify-center mb-3 text-primary">
+<span class="material-symbols-outlined text-[18px]">flight_takeoff</span>
+</div>
+<span class="font-label-lg font-semibold text-on-surface">Travel &amp; Cities</span>
+<span class="font-label-md text-secondary mt-0.5">Asking directions &amp; food</span>
+</button>
+<!-- Topic 4 -->
+<button class="flex flex-col p-4 border border-surface-container rounded-xl text-left hover:border-on-surface transition-colors bg-surface-container-lowest">
+<div class="size-8 rounded-lg border border-surface-container flex items-center justify-center mb-3 text-primary">
+<span class="material-symbols-outlined text-[18px]">coffee</span>
+</div>
+<span class="font-label-lg font-semibold text-on-surface">Coffee &amp; Culture</span>
+<span class="font-label-md text-secondary mt-0.5">Ordering and informal chats</span>
+</button>
+</div>
+</section>
+</div>
+</div>
+<!-- Bottom Navigation Bar (Design System Compliant) -->
+<nav class="sticky bottom-0 bg-surface-container-lowest border-t border-surface-container px-6 py-3">
+<div class="flex items-center justify-between">
+<!-- Home (Active) -->
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<div class="size-7 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">home</span>
+</div>
+<span class="font-label-md font-semibold text-primary">Home</span>
+</a>
+<!-- Practice -->
+<a class="flex flex-col items-center gap-1 text-secondary hover:text-primary transition-colors" href="#">
+<div class="size-7 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">record_voice_over</span>
+</div>
+<span class="font-label-md font-medium text-secondary">Practice</span>
+</a>
+<!-- Progress -->
+<a class="flex flex-col items-center gap-1 text-secondary hover:text-primary transition-colors" href="#">
+<div class="size-7 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">bar_chart</span>
+</div>
+<span class="font-label-md font-medium text-secondary">Progress</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center gap-1 text-secondary hover:text-primary transition-colors" href="#">
+<div class="size-7 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">person</span>
+</div>
+<span class="font-label-md font-medium text-secondary">Profile</span>
+</a>
+</div>
+</nav>
+</main>
+</body></html>

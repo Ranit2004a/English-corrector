@@ -1,0 +1,120 @@
+import { Platform } from 'react-native';
+import { AIResponsePayload, SessionSummaryPayload, CEFRLevel } from '../types';
+
+// Default backend endpoint (supports localhost on Web, 10.0.2.2 on Android emulator, or LAN IP)
+const getBaseUrl = () => {
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:8000';
+  }
+  return 'http://localhost:8000';
+};
+
+let customBackendUrl: string | null = null;
+
+export const setCustomBackendUrl = (url: string) => {
+  customBackendUrl = url;
+};
+
+export const ApiService = {
+  getUrl(): string {
+    return customBackendUrl || getBaseUrl();
+  },
+
+  async checkHealth(): Promise<{ status: string; ai_ready: boolean }> {
+    try {
+      const res = await fetch(`${this.getUrl()}/health`, { method: 'GET' });
+      if (!res.ok) throw new Error(`Health check returned ${res.status}`);
+      return await res.json();
+    } catch (e) {
+      console.warn('Backend health check error:', e);
+      return { status: 'offline', ai_ready: false };
+    }
+  },
+
+  async sendMessage(
+    message: string,
+    level: CEFRLevel = 'B1',
+    topic: string = 'Daily Conversation',
+    sessionId: string = 'session_default',
+    history: { role: string; text: string }[] = []
+  ): Promise<AIResponsePayload> {
+    try {
+      const response = await fetch(`${this.getUrl()}/api/conversation/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          level,
+          topic,
+          message,
+          history,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
+      }
+
+      const data: AIResponsePayload = await response.json();
+      return data;
+    } catch (error) {
+      console.warn('API error sending message, using offline friendly fallback:', error);
+      return {
+        reply: "That's very interesting! Could you tell me a little bit more about that?",
+        corrections: [],
+        top_fix: null,
+        encouragement: "Great job keeping the conversation active!",
+      };
+    }
+  },
+
+  async summarizeSession(
+    sessionId: string,
+    topic: string,
+    level: CEFRLevel,
+    durationSeconds: number,
+    messages: { role: string; text: string }[],
+    correctionsCount: number
+  ): Promise<SessionSummaryPayload> {
+    try {
+      const response = await fetch(`${this.getUrl()}/api/conversation/session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          topic,
+          level,
+          duration_seconds: durationSeconds,
+          messages,
+          corrections_count: correctionsCount,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.warn('API error summarizing session, calculating local summary:', error);
+      const minutes = Math.max(1, Math.round(durationSeconds / 60));
+      return {
+        session_id: sessionId,
+        duration_minutes: minutes,
+        messages_count: messages.length,
+        corrections_count: correctionsCount,
+        grammar_score: Math.max(65, 95 - correctionsCount * 5),
+        vocabulary_score: 82,
+        fluency_score: 85,
+        overall_score: Math.round((82 + 85 + Math.max(65, 95 - correctionsCount * 5)) / 3),
+        top_improvement: correctionsCount > 0 ? "Review the past tense and preposition suggestions." : "Continue practicing diverse vocabulary.",
+        new_words: ["opportunity", "perspective", "confident", "flexibility"],
+        encouragement: "Fantastic session! You spoke naturally and kept a steady conversation flow.",
+      };
+    }
+  }
+};

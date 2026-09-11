@@ -1,0 +1,114 @@
+# Implementation Plan: AI English Speaking Coach Mobile App
+
+Build a production-quality, local-first **AI English Speaking Coach** mobile application with React Native (Expo) and a Python (FastAPI + Gemini) backend, styled following the **Editorial Monolith** design system (`DESIGN.md`).
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> - **Local-First Database**: The mobile app strictly uses `expo-sqlite` locally with no cloud database (no Supabase/Firebase).
+> - **Gemini API Key Security**: The Gemini API key will only be stored in `backend/.env` and will never be exposed to the mobile app.
+> - **Design Aesthetic**: Adheres strictly to the monochrome, high-contrast, Swiss typographic style outlined in `prototype/DESIGN.md` (Hanken Grotesk typography, zinc/charcoal palette, tactile physical feel, minimal borders).
+
+---
+
+## Architecture Overview
+
+```text
+React Native / Expo Mobile App
+ ├── App Navigation (Expo Router with Tab & Stack navigation)
+ ├── UI Design System (Editorial Monolith Monochrome Theme)
+ ├── State Layer (Zustand stores + TanStack Query)
+ ├── Local Database (expo-sqlite with Migrations & Repositories)
+ ├── Audio & Voice Services (expo-speech TTS + STT voice capture)
+ └── API Client (Axios / Fetch with error handling)
+       │
+       ▼
+ FastAPI Backend (Python)
+ ├── REST API Endpoints (/conversation, /analyze, /topics, /feedback)
+ ├── Gemini Service (Structured JSON output mode, Pydantic validation)
+ └── Robust Fallbacks & Level-specific Prompt Engine (A1-C2)
+```
+
+---
+
+## Proposed Changes
+
+### Backend (`backend/`)
+
+#### [NEW] Backend Structure & Dependencies
+- `backend/requirements.txt`: FastAPI, Uvicorn, google-genai / google-generativeai, pydantic, python-dotenv, httpx.
+- `backend/.env.example`: Template with `GEMINI_API_KEY`, `HOST`, `PORT`, `CORS_ORIGINS`.
+- `backend/app/config.py`: Settings model with Pydantic BaseSettings.
+- `backend/app/main.py`: FastAPI entrypoint with CORS, route mounting, logging, and healthcheck.
+
+#### [NEW] Backend Services & Schemas
+- `backend/app/schemas/conversation.py`: Pydantic models for ConversationRequest, GeminiCorrection, GeminiResponse, SessionSummary, AnalyzeRequest.
+- `backend/app/services/prompt_service.py`: Level-adaptive prompt generation (A1/A2 Beginner, B1/B2 Intermediate, C1/C2 Advanced), topic context, strict JSON schema instructions.
+- `backend/app/services/gemini_service.py`: Robust integration with Gemini API (using structured JSON generation, fallback parsing, and error recovery).
+- `backend/app/api/routes/conversation.py`: Routes for `/api/conversation/message`, `/api/conversation/analyze`, `/api/conversation/session`.
+- `backend/app/api/routes/topics.py`: Categorized topics (Everyday, Professional, Advanced, Free).
+- `backend/app/api/routes/health.py`: Healthcheck endpoint.
+
+---
+
+### Mobile App (`mobile/`)
+
+#### [NEW] Expo Project Setup & Config
+- Initialize Expo app with TypeScript and Expo Router.
+- Configure NativeWind / Tailwind styling matching `prototype/DESIGN.md` color tokens & typography.
+- Setup `expo-sqlite`, `expo-speech`, `expo-secure-store`, `lucide-react-native` (or Vector Icons / Material Symbols matching prototype).
+
+#### [NEW] Local SQLite Database Layer (`mobile/db/`)
+- `mobile/db/database.ts`: SQLite database connection management.
+- `mobile/db/migrations.ts`: Schema creation for `users`, `sessions`, `messages`, `corrections`, `vocabulary`, `progress`, `settings`.
+- `mobile/db/repositories/`:
+  - `userRepository.ts`: CRUD for user profile & level.
+  - `sessionRepository.ts`: Session lifecycle & stats.
+  - `messageRepository.ts`: Conversation message storage.
+  - `correctionRepository.ts`: Feedback & mistakes tracking.
+  - `vocabularyRepository.ts`: Discovered words & learned status.
+  - `progressRepository.ts`: Speaking minutes, scores, daily streaks.
+
+#### [NEW] State & Services (`mobile/store/`, `mobile/services/`)
+- `mobile/store/useUserStore.ts`: User profile, CEFR level, daily goal, streak.
+- `mobile/store/usePracticeStore.ts`: Active practice session, recording state (`IDLE`, `LISTENING`, `PROCESSING`, `AI_SPEAKING`, `ERROR`), audio levels.
+- `mobile/store/useSettingsStore.ts`: Voice speed, dark/light theme, backend URL config.
+- `mobile/services/api.ts`: API client connecting to FastAPI.
+- `mobile/services/speech.ts` & `tts.ts`: Speech recognition & Text-to-Speech audio controller with playback speed controls.
+
+#### [NEW] Application Screens (`mobile/app/`)
+- `_layout.tsx`: Root layout with TanStack Query provider, database initialization hook, and font loading.
+- `(tabs)/_layout.tsx`: Editorial Monolith bottom tab bar (Home, Practice, Progress, Profile).
+- `(tabs)/index.tsx`: **Home Screen** (Greeting, CEFR level badge, daily goal progress bar, prominent Start Speaking CTA card, weekly activity metrics, recommended topics, recent mistakes).
+- `(tabs)/practice.tsx`: **Practice Topics Screen** (Topic categories: Everyday, Professional, Advanced, Free conversation).
+- `(tabs)/progress.tsx`: **Progress Screen** (Weekly speaking chart, daily minutes, streak tracker, fluency/grammar scores, category breakdown).
+- `(tabs)/profile.tsx`: **Profile & Settings Screen** (User settings, voice controls, level picker, export local data, clear SQLite data with confirmation).
+- `practice/session.tsx`: **Speaking Practice Screen** (Live conversation screen, avatar header, timer, audio rhythm bar, tactile mic button, expandable inline correction card, mute & quick-type drawer).
+- `practice/summary.tsx`: **Session Summary Screen** (Speaking time, fluency/grammar scores, top improvements, new vocabulary words).
+- `mistakes/index.tsx`: **Mistake History Screen** (Filtering by category: Grammar, Vocab, Pronunciation, Naturalness; severity badges; clear explanation).
+- `vocabulary/index.tsx`: **Vocabulary Screen** (Word cards with definitions, contextual examples, pronunciation trigger, mark as learned).
+- `onboarding/index.tsx`: **Onboarding Screen** (Step 1: Welcome, Step 2: Level Selection, Step 3: Goal Selection, Step 4: Daily Goal, Step 5: Microphone Permission).
+
+---
+
+## Verification Plan
+
+### Backend Verification
+1. Run FastAPI backend server with Uvicorn.
+2. Execute automated test script (`backend/test_api.py`) verifying:
+   - Health endpoint responds with `200 OK`.
+   - Topics endpoint returns categorized topics.
+   - Message endpoint receives conversation payload, calls Gemini, and returns validated JSON with `reply`, `corrections`, `top_fix`, and `encouragement`.
+   - Error handling safely returns fallback responses for invalid payloads.
+
+### Mobile App Verification
+1. Run Expo web/native bundle check with TypeScript typecheck (`npx tsc --noEmit`).
+2. Verify SQLite database initializes tables, executes seed/migration, and performs CRUD operations in all repositories.
+3. Test complete user flow:
+   - User onboarding & level selection.
+   - Starting a practice session on a topic.
+   - Sending spoken/typed messages and receiving AI voice + text + inline suggestions.
+   - Ending session and verifying summary calculations stored in SQLite.
+   - Viewing Progress dashboard, Mistake History filters, and Vocabulary list.
