@@ -63,32 +63,34 @@ export default function PracticeScreen() {
       </View>
 
       {/* Category Filter Chips */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterBar}
-      >
-        {CATEGORIES.map(cat => (
-          <TouchableOpacity
-            key={cat}
-            activeOpacity={0.8}
-            onPress={() => setSelectedCategory(cat)}
-            style={[
-              styles.chip,
-              selectedCategory === cat && styles.chipActive,
-            ]}
-          >
-            <Text
+      <View style={styles.filterContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterBar}
+        >
+          {CATEGORIES.map(cat => (
+            <TouchableOpacity
+              key={cat}
+              activeOpacity={0.8}
+              onPress={() => setSelectedCategory(cat)}
               style={[
-                styles.chipText,
-                selectedCategory === cat && styles.chipTextActive,
+                styles.chip,
+                selectedCategory === cat && styles.chipActive,
               ]}
             >
-              {cat}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                style={[
+                  styles.chipText,
+                  selectedCategory === cat && styles.chipTextActive,
+                ]}
+              >
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Topics List */}
       <ScrollView contentContainerStyle={styles.listContainer} showsVerticalScrollIndicator={false}>
@@ -131,8 +133,8 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: Spacing.margin,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.xs,
   },
   title: {
     ...Typography.headlineMd,
@@ -143,27 +145,38 @@ const styles = StyleSheet.create({
     color: Colors.muted,
     marginTop: 2,
   },
+  filterContainer: {
+    height: 48,
+    marginVertical: 4,
+    justifyContent: 'center',
+  },
   filterBar: {
     paddingHorizontal: Spacing.margin,
-    paddingVertical: 10,
     gap: 8,
     flexDirection: 'row',
+    alignItems: 'center',
   },
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    height: 36,
+    paddingHorizontal: 16,
     borderRadius: Radius.full,
     borderWidth: 1,
     borderColor: Colors.outline,
     backgroundColor: Colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chipActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
   chipText: {
-    ...Typography.labelMd,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '500',
     color: Colors.muted,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   chipTextActive: {
     color: Colors.onPrimary,
