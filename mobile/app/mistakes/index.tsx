@@ -78,32 +78,34 @@ export default function MistakesScreen() {
       </View>
 
       {/* Filter Chips Bar */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterBar}
-      >
-        {FILTER_OPTIONS.map(opt => (
-          <TouchableOpacity
-            key={opt}
-            activeOpacity={0.8}
-            onPress={() => setSelectedFilter(opt)}
-            style={[
-              styles.chip,
-              selectedFilter === opt && styles.chipActive,
-            ]}
-          >
-            <Text
+      <View style={styles.filterContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterBar}
+        >
+          {FILTER_OPTIONS.map(opt => (
+            <TouchableOpacity
+              key={opt}
+              activeOpacity={0.8}
+              onPress={() => setSelectedFilter(opt)}
               style={[
-                styles.chipText,
-                selectedFilter === opt && styles.chipTextActive,
+                styles.chip,
+                selectedFilter === opt && styles.chipActive,
               ]}
             >
-              {opt.charAt(0).toUpperCase() + opt.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                style={[
+                  styles.chipText,
+                  selectedFilter === opt && styles.chipTextActive,
+                ]}
+              >
+                {opt.charAt(0).toUpperCase() + opt.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Mistakes List */}
       <ScrollView contentContainerStyle={styles.listContainer} showsVerticalScrollIndicator={false}>
@@ -147,27 +149,38 @@ const styles = StyleSheet.create({
     ...Typography.bodySm,
     color: Colors.muted,
   },
+  filterContainer: {
+    height: 48,
+    marginVertical: 4,
+    justifyContent: 'center',
+  },
   filterBar: {
     paddingHorizontal: Spacing.margin,
-    paddingVertical: 10,
     gap: 8,
     flexDirection: 'row',
+    alignItems: 'center',
   },
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    height: 36,
+    paddingHorizontal: 16,
     borderRadius: Radius.full,
     borderWidth: 1,
     borderColor: Colors.outline,
     backgroundColor: Colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chipActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
   chipText: {
-    ...Typography.labelMd,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '500',
     color: Colors.muted,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   chipTextActive: {
     color: Colors.onPrimary,
