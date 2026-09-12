@@ -16,9 +16,13 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     
-    # Gemini AI
+    # Gemini AI & Token Optimization
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MAX_OUTPUT_TOKENS: int = 350
+    GEMINI_TEMPERATURE: float = 0.4
+    MAX_HISTORY_TURNS: int = 4
+    ENABLE_RESPONSE_CACHE: bool = True
     
     # CORS
     CORS_ORIGINS: List[str] = ["*"]
