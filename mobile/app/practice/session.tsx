@@ -11,10 +11,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { Colors, NeuShadows, Radius, Spacing, Typography } from '../../constants/theme';
 import { usePracticeStore } from '../../store/usePracticeStore';
 import { MessageBubble } from '../../components/chat/MessageBubble';
 import { AudioWaveform } from '../../components/ui/AudioWaveform';
+import { NeuIconButton } from '../../components/ui/NeuIconButton';
 import { SpeechService } from '../../services/speech';
 import {
   ArrowLeft,
@@ -25,6 +26,7 @@ import {
   Keyboard,
   PhoneOff,
   Send,
+  Sparkles,
 } from 'lucide-react-native';
 
 export default function PracticeSessionScreen() {
@@ -70,11 +72,9 @@ export default function PracticeSessionScreen() {
 
   const handleToggleVoice = () => {
     if (practiceState === 'LISTENING') {
-      // User tapped to finish speaking
       SpeechService.stopListening();
       setPracticeState('IDLE');
     } else if (practiceState === 'IDLE') {
-      // Start listening
       SpeechService.startListening({
         onStart: () => {
           setPracticeState('LISTENING');
@@ -128,9 +128,9 @@ export default function PracticeSessionScreen() {
   const getMicStatusHint = () => {
     switch (practiceState) {
       case 'LISTENING':
-        return 'Listening... Tap to finish';
+        return 'Listening... Tap to send';
       case 'PROCESSING':
-        return 'Analyzing your English...';
+        return 'Analyzing pronunciation & grammar...';
       case 'AI_SPEAKING':
         return 'Echo is speaking...';
       case 'ERROR':
@@ -142,11 +142,12 @@ export default function PracticeSessionScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Minimal Monochrome Header */}
+      {/* Neumorphic Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity
-            style={styles.backButton}
+          <NeuIconButton
+            icon={<ArrowLeft size={18} color={Colors.onSurface} />}
+            size={40}
             onPress={() => {
               if (messages.length > 1) {
                 handleEndSession();
@@ -155,12 +156,12 @@ export default function PracticeSessionScreen() {
                 router.back();
               }
             }}
-          >
-            <ArrowLeft size={20} color={Colors.onSurface} />
-          </TouchableOpacity>
-          <View>
-            <Text style={styles.topicTitle}>{currentSession?.topic || 'Daily Conversation'}</Text>
-            <Text style={styles.topicSub}>Echo AI Speaking Coach</Text>
+          />
+          <View style={styles.titleColumn}>
+            <Text style={styles.topicTitle} numberOfLines={1}>
+              {currentSession?.topic || 'Daily Conversation'}
+            </Text>
+            <Text style={styles.topicSub}>Echo AI Coach</Text>
           </View>
         </View>
 
@@ -170,7 +171,11 @@ export default function PracticeSessionScreen() {
             <Text style={styles.timerText}>{formatTimer(timerSeconds)}</Text>
           </View>
 
-          <TouchableOpacity style={styles.endHeaderBtn} onPress={handleEndSession}>
+          <TouchableOpacity
+            style={styles.endHeaderBtn}
+            onPress={handleEndSession}
+            activeOpacity={0.8}
+          >
             <Text style={styles.endHeaderText}>End</Text>
           </TouchableOpacity>
         </View>
@@ -196,43 +201,45 @@ export default function PracticeSessionScreen() {
         {/* Processing Indicator */}
         {practiceState === 'PROCESSING' && (
           <View style={styles.processingBubble}>
-            <ActivityIndicator size="small" color={Colors.primary} />
-            <Text style={styles.processingText}>Echo is thinking...</Text>
+            <ActivityIndicator size="small" color={Colors.primaryAccent} />
+            <Text style={styles.processingText}>Echo is analyzing...</Text>
           </View>
         )}
       </ScrollView>
 
-      {/* Interaction Dock Area */}
+      {/* Neumorphic Bottom Interaction Dock */}
       <View style={styles.interactionDock}>
         {/* Audio Rhythm Bar */}
         <AudioWaveform
           active={practiceState === 'LISTENING' || practiceState === 'AI_SPEAKING'}
         />
 
-        {/* Tactile Microphone Trigger */}
-        <View style={styles.micContainer}>
+        {/* Grand 3D Neumorphic Microphone */}
+        <View style={styles.micWrapper}>
           <View
             style={[
-              styles.micOuterRing,
-              practiceState === 'LISTENING' && styles.micOuterRingActive,
+              styles.micGlowRing,
+              practiceState === 'LISTENING' && styles.micGlowRingListening,
             ]}
-          />
-          <TouchableOpacity
-            activeOpacity={0.9}
-            style={[
-              styles.micButton,
-              practiceState === 'LISTENING' && styles.micButtonListening,
-              practiceState === 'PROCESSING' && styles.micButtonProcessing,
-            ]}
-            onPress={handleToggleVoice}
-            disabled={practiceState === 'PROCESSING'}
           >
-            {practiceState === 'LISTENING' ? (
-              <Square size={26} color={Colors.onPrimary} fill={Colors.onPrimary} />
-            ) : (
-              <Mic size={30} color={Colors.onPrimary} />
-            )}
-          </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.88}
+              style={[
+                styles.micButton,
+                practiceState === 'LISTENING'
+                  ? styles.micButtonListening
+                  : styles.micButtonIdle,
+              ]}
+              onPress={handleToggleVoice}
+              disabled={practiceState === 'PROCESSING'}
+            >
+              {practiceState === 'LISTENING' ? (
+                <Square size={28} color={Colors.onPrimary} fill={Colors.onPrimary} />
+              ) : (
+                <Mic size={32} color={Colors.onPrimaryAccent} />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Text
@@ -251,7 +258,7 @@ export default function PracticeSessionScreen() {
               style={styles.drawerInput}
               value={textInput}
               onChangeText={setTextInput}
-              placeholder="Type your response in English..."
+              placeholder="Type your answer in English..."
               placeholderTextColor={Colors.muted}
               onSubmitEditing={handleSendTypedMessage}
             />
@@ -259,34 +266,56 @@ export default function PracticeSessionScreen() {
               style={styles.sendButton}
               onPress={handleSendTypedMessage}
               disabled={!textInput.trim()}
+              activeOpacity={0.8}
             >
-              <Send size={16} color={Colors.onPrimary} />
+              <Send size={16} color={Colors.onPrimaryAccent} />
             </TouchableOpacity>
           </View>
         )}
 
         {/* Minimal Utility Row */}
         <View style={styles.utilityRow}>
-          <TouchableOpacity style={styles.utilityBtn} onPress={toggleMute}>
+          <TouchableOpacity
+            style={[styles.utilityBtn, isMuted && styles.utilityBtnActive]}
+            onPress={toggleMute}
+            activeOpacity={0.8}
+          >
             {isMuted ? (
-              <VolumeX size={17} color={Colors.onSurface} />
+              <VolumeX size={16} color={Colors.primaryAccent} />
             ) : (
-              <Volume2 size={17} color={Colors.onSurface} />
+              <Volume2 size={16} color={Colors.onSurface} />
             )}
-            <Text style={styles.utilityText}>{isMuted ? 'Muted' : 'Mute'}</Text>
+            <Text style={[styles.utilityText, isMuted && styles.utilityTextActive]}>
+              {isMuted ? 'Muted' : 'Mute'}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.utilityBtn}
+            style={[styles.utilityBtn, showKeyboardDrawer && styles.utilityBtnActive]}
             onPress={() => setShowKeyboardDrawer(!showKeyboardDrawer)}
+            activeOpacity={0.8}
           >
-            <Keyboard size={17} color={Colors.onSurface} />
-            <Text style={styles.utilityText}>Type</Text>
+            <Keyboard
+              size={16}
+              color={showKeyboardDrawer ? Colors.primaryAccent : Colors.onSurface}
+            />
+            <Text
+              style={[
+                styles.utilityText,
+                showKeyboardDrawer && styles.utilityTextActive,
+              ]}
+            >
+              Type
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.utilityBtn} onPress={handleEndSession}>
-            <PhoneOff size={17} color={Colors.error} />
-            <Text style={[styles.utilityText, { color: Colors.error }]}>End</Text>
+          <TouchableOpacity
+            style={[styles.utilityBtn, styles.utilityBtnEnd]}
+            onPress={handleEndSession}
+            activeOpacity={0.8}
+          >
+            <PhoneOff size={16} color={Colors.error} />
+            <Text style={[styles.utilityText, styles.utilityTextEnd]}>End</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -304,192 +333,215 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.margin,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.outline,
-    backgroundColor: Colors.surface,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.sm,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
   },
-  backButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
+  titleColumn: {
+    flex: 1,
+    gap: 1,
   },
   topicTitle: {
-    ...Typography.labelLg,
+    ...Typography.headlineSm,
+    fontSize: 16,
     color: Colors.onSurface,
+    fontWeight: '800',
   },
   topicSub: {
     ...Typography.labelSm,
-    fontSize: 11,
     color: Colors.muted,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   timerPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: Radius.full,
-    backgroundColor: Colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    ...NeuShadows.sunken,
   },
   timerDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.error,
   },
   timerText: {
-    ...Typography.labelMd,
+    fontFamily: 'monospace',
+    fontSize: 13,
+    fontWeight: '700',
     color: Colors.onSurface,
-    fontWeight: '600',
   },
   endHeaderBtn: {
-    paddingHorizontal: 6,
-    paddingVertical: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+    ...NeuShadows.raisedSm,
+    backgroundColor: Colors.errorContainer,
   },
   endHeaderText: {
-    ...Typography.labelMd,
-    color: Colors.muted,
-    fontWeight: '600',
+    ...Typography.labelSm,
+    color: Colors.onErrorContainer,
+    fontWeight: '800',
   },
   dialogueContainer: {
-    padding: Spacing.margin,
+    paddingHorizontal: Spacing.margin,
+    paddingTop: 10,
     paddingBottom: 24,
-    gap: 8,
   },
   processingBubble: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     alignSelf: 'flex-start',
-    backgroundColor: Colors.surfaceSubtle,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    marginTop: 4,
+    ...NeuShadows.raisedSm,
+    marginVertical: 8,
   },
   processingText: {
     ...Typography.bodySm,
-    color: Colors.muted,
-    fontStyle: 'italic',
+    color: Colors.primaryAccent,
+    fontWeight: '600',
   },
   interactionDock: {
     backgroundColor: Colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: Colors.outline,
-    paddingTop: 10,
-    paddingBottom: 16,
+    borderTopLeftRadius: Radius.xxl,
+    borderTopRightRadius: Radius.xxl,
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    shadowColor: Colors.neuDarkDeep,
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 16,
+    paddingTop: 16,
+    paddingBottom: 28,
     paddingHorizontal: Spacing.margin,
+    gap: 12,
     alignItems: 'center',
-    gap: 10,
   },
-  micContainer: {
-    position: 'relative',
+  micWrapper: {
+    marginVertical: 4,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  micOuterRing: {
-    position: 'absolute',
+  micGlowRing: {
     width: 86,
     height: 86,
     borderRadius: 43,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    ...NeuShadows.raised,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  micOuterRingActive: {
-    borderColor: Colors.primary,
-    transform: [{ scale: 1.08 }],
+  micGlowRingListening: {
+    shadowColor: Colors.primaryAccent,
+    shadowRadius: 20,
+    shadowOpacity: 0.8,
+    borderColor: Colors.primaryAccent,
   },
   micButton: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+  },
+  micButtonIdle: {
+    backgroundColor: Colors.primaryAccent,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    shadowColor: Colors.primaryAccent,
+    shadowOffset: { width: 3, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 8,
   },
   micButtonListening: {
-    backgroundColor: '#1f2937',
-  },
-  micButtonProcessing: {
-    backgroundColor: Colors.muted,
+    backgroundColor: Colors.error,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    shadowColor: Colors.error,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 12,
+    elevation: 8,
   },
   micHintText: {
     ...Typography.labelMd,
     color: Colors.muted,
+    fontWeight: '600',
   },
   micHintTextActive: {
-    color: Colors.primary,
-    fontWeight: '600',
+    color: Colors.primaryAccent,
+    fontWeight: '700',
   },
   keyboardDrawer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
     gap: 8,
-    marginTop: 4,
+    width: '100%',
+    ...NeuShadows.sunken,
+    borderRadius: Radius.lg,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
   drawerInput: {
     flex: 1,
-    height: 42,
-    backgroundColor: Colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    borderRadius: Radius.full,
-    paddingHorizontal: 16,
-    ...Typography.bodySm,
+    height: 44,
+    ...Typography.bodyMd,
     color: Colors.onSurface,
   },
   sendButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: Colors.primary,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: Colors.primaryAccent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   utilityRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: Colors.surfaceSubtle,
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 4,
   },
   utilityBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: Radius.full,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surface,
+    ...NeuShadows.raisedSm,
+  },
+  utilityBtnActive: {
+    ...NeuShadows.sunken,
+    backgroundColor: Colors.surfaceSunken,
+  },
+  utilityBtnEnd: {
+    backgroundColor: Colors.errorContainer,
   },
   utilityText: {
-    ...Typography.labelMd,
+    ...Typography.labelSm,
     color: Colors.onSurface,
+    fontWeight: '700',
+  },
+  utilityTextActive: {
+    color: Colors.primaryAccent,
+  },
+  utilityTextEnd: {
+    color: Colors.onErrorContainer,
   },
 });

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Message, Correction } from '../../types';
-import { Colors, Radius, Typography, Spacing } from '../../constants/theme';
+import { Colors, NeuShadows, Radius, Typography, Spacing } from '../../constants/theme';
 import { TTSService } from '../../services/tts';
 import { CorrectionCard } from '../feedback/CorrectionCard';
-import { Volume2, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { Volume2, ChevronDown, ChevronUp, Sparkles } from 'lucide-react-native';
 
 interface MessageBubbleProps {
   message: Message;
@@ -32,7 +32,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
     <View style={[styles.container, isAI ? styles.containerAI : styles.containerUser]}>
       {/* Header Info */}
       <View style={[styles.header, isAI ? styles.headerAI : styles.headerUser]}>
-        <Text style={styles.senderName}>{isAI ? 'Echo' : 'You'}</Text>
+        <Text style={styles.senderName}>{isAI ? 'Echo AI' : 'You'}</Text>
         <Text style={styles.dot}>•</Text>
         <Text style={styles.timestamp}>{formatTime(message.created_at)}</Text>
       </View>
@@ -47,7 +47,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
         {isAI && (
           <View style={styles.aiActionRow}>
             <TouchableOpacity activeOpacity={0.8} onPress={handleSpeak} style={styles.listenButton}>
-              <Volume2 size={15} color={Colors.muted} />
+              <Volume2 size={15} color={Colors.primaryAccent} />
               <Text style={styles.listenText}>Listen</Text>
             </TouchableOpacity>
           </View>
@@ -62,9 +62,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
             onPress={() => setShowFeedback(!showFeedback)}
             style={styles.feedbackTrigger}
           >
-            <View style={styles.feedbackDot} />
+            <Sparkles size={13} color={Colors.primaryAccent} />
             <Text style={styles.feedbackTriggerText}>
-              {corrections.length} suggestion{corrections.length > 1 ? 's' : ''} available
+              {corrections.length} correction{corrections.length > 1 ? 's' : ''} available
             </Text>
             {showFeedback ? (
               <ChevronUp size={14} color={Colors.muted} />
@@ -88,8 +88,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 6,
-    maxWidth: '86%',
+    marginVertical: 8,
+    maxWidth: '88%',
   },
   containerAI: {
     alignSelf: 'flex-start',
@@ -100,19 +100,20 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
-    gap: 4,
+    marginBottom: 5,
+    gap: 5,
   },
   headerAI: {
-    paddingLeft: 4,
+    paddingLeft: 6,
   },
   headerUser: {
-    paddingRight: 4,
+    paddingRight: 6,
     justifyContent: 'flex-end',
   },
   senderName: {
     ...Typography.labelSm,
     color: Colors.muted,
+    fontWeight: '700',
   },
   dot: {
     ...Typography.labelSm,
@@ -124,18 +125,16 @@ const styles = StyleSheet.create({
   },
   bubble: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: Radius.lg,
   },
   bubbleAI: {
-    backgroundColor: Colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    borderTopLeftRadius: Radius.sm,
+    ...NeuShadows.raised,
+    borderTopLeftRadius: Radius.xs,
   },
   bubbleUser: {
-    backgroundColor: Colors.primary,
-    borderTopRightRadius: Radius.sm,
+    ...NeuShadows.accentRaised,
+    borderTopRightRadius: Radius.xs,
   },
   messageText: {
     ...Typography.bodyMd,
@@ -145,29 +144,35 @@ const styles = StyleSheet.create({
     color: Colors.onSurface,
   },
   messageTextUser: {
-    color: Colors.onPrimary,
+    color: Colors.onPrimaryAccent,
+    fontWeight: '500',
   },
   aiActionRow: {
-    marginTop: 8,
-    paddingTop: 6,
+    marginTop: 10,
+    paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: Colors.outline,
+    borderTopColor: Colors.outlineDark,
     flexDirection: 'row',
     alignItems: 'center',
   },
   listenButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
     paddingVertical: 2,
-    paddingHorizontal: 4,
+    paddingHorizontal: 6,
+    borderRadius: Radius.sm,
+    backgroundColor: Colors.surfaceSubtle,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
   },
   listenText: {
     ...Typography.labelMd,
-    color: Colors.muted,
+    color: Colors.primaryAccent,
+    fontWeight: '600',
   },
   feedbackContainer: {
-    marginTop: 6,
+    marginTop: 8,
     width: '100%',
     alignItems: 'flex-end',
   },
@@ -175,25 +180,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: Radius.full,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-  },
-  feedbackDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.muted,
+    ...NeuShadows.raisedSm,
   },
   feedbackTriggerText: {
     ...Typography.labelMd,
-    color: Colors.muted,
+    color: Colors.primaryAccent,
+    fontWeight: '700',
   },
   feedbackDrawer: {
     width: '100%',
-    marginTop: 6,
+    marginTop: 8,
   },
 });

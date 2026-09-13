@@ -1,13 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { Colors, NeuShadows, Radius, Spacing, Typography } from '../../constants/theme';
 import { usePracticeStore } from '../../store/usePracticeStore';
 import { ProgressBar } from '../../components/ui/ProgressBar';
-import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { CheckCircle, Award, Sparkles, BookOpen, ArrowRight } from 'lucide-react-native';
+import { NeuCard } from '../../components/ui/NeuCard';
+import { CheckCircle2, Sparkles, BookOpen, ArrowRight, Award } from 'lucide-react-native';
 
 export default function SessionSummaryScreen() {
   const router = useRouter();
@@ -23,13 +23,13 @@ export default function SessionSummaryScreen() {
     duration_minutes: 5,
     messages_count: 8,
     corrections_count: 2,
-    grammar_score: 82,
-    vocabulary_score: 85,
+    grammar_score: 84,
+    vocabulary_score: 86,
     fluency_score: 88,
-    overall_score: 85,
-    top_improvement: 'Use present perfect continuous for actions that started in past and continue now.',
+    overall_score: 86,
+    top_improvement: 'Use present perfect continuous for actions that started in past and continue into the present.',
     new_words: ['opportunity', 'perspective', 'flexible', 'articulate'],
-    encouragement: 'Great job speaking naturally and keeping a steady rhythm throughout the conversation!',
+    encouragement: 'Great job speaking naturally and keeping a steady conversational rhythm!',
   };
 
   return (
@@ -38,58 +38,63 @@ export default function SessionSummaryScreen() {
         {/* Top Celebration */}
         <View style={styles.heroSection}>
           <View style={styles.checkCircle}>
-            <CheckCircle size={32} color={Colors.primary} />
+            <CheckCircle2 size={36} color={Colors.success} />
           </View>
-          <Text style={styles.heroTitle}>Great session!</Text>
+          <Text style={styles.heroTitle}>Great Practice Session!</Text>
           <Text style={styles.heroSubtitle}>
-            You spoke for <Text style={styles.heroBold}>{summary.duration_minutes} minutes</Text> across {summary.messages_count} dialogue exchanges.
+            You spoke for <Text style={styles.heroBold}>{summary.duration_minutes} minutes</Text> across{' '}
+            {summary.messages_count} dialogue turns.
           </Text>
         </View>
 
-        {/* Performance Scores Grid */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>SESSION EVALUATION</Text>
+        {/* Performance Evaluation Card */}
+        <NeuCard variant="raised" style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Award size={18} color={Colors.primaryAccent} />
+            <Text style={styles.cardTitle}>SESSION EVALUATION</Text>
+          </View>
 
           <View style={styles.scoreRow}>
             <View style={styles.scoreMeta}>
               <Text style={styles.scoreLabel}>Grammar Accuracy</Text>
               <Text style={styles.scoreValue}>{summary.grammar_score}%</Text>
             </View>
-            <ProgressBar progress={summary.grammar_score / 100} height={6} />
+            <ProgressBar progress={summary.grammar_score} height={8} color={Colors.primaryAccent} />
           </View>
 
-          <View style={styles.scoreRow}>
-            <View style={styles.scoreMeta}>
-              <Text style={styles.scoreLabel}>Vocabulary Diversity</Text>
-              <Text style={styles.scoreValue}>{summary.vocabulary_score}%</Text>
+            {/* Vocabulary Diversity */}
+            <View style={styles.scoreRow}>
+              <View style={styles.scoreMeta}>
+                <Text style={styles.scoreLabel}>Vocabulary Diversity</Text>
+                <Text style={styles.scoreValue}>{summary.vocabulary_score}%</Text>
+              </View>
+              <ProgressBar progress={summary.vocabulary_score} height={8} color={Colors.primaryAccent} />
             </View>
-            <ProgressBar progress={summary.vocabulary_score / 100} height={6} />
-          </View>
 
           <View style={styles.scoreRow}>
             <View style={styles.scoreMeta}>
               <Text style={styles.scoreLabel}>Fluency & Flow</Text>
               <Text style={styles.scoreValue}>{summary.fluency_score}%</Text>
             </View>
-            <ProgressBar progress={summary.fluency_score / 100} height={6} />
+            <ProgressBar progress={summary.fluency_score} height={8} color={Colors.success} />
           </View>
-        </View>
+        </NeuCard>
 
         {/* Top Improvement Area */}
-        <View style={styles.improvementCard}>
+        <NeuCard variant="raised" style={styles.improvementCard}>
           <View style={styles.cardHeader}>
-            <Sparkles size={18} color={Colors.primary} />
-            <Text style={styles.improvementHeader}>TOP THING TO IMPROVE</Text>
+            <Sparkles size={18} color={Colors.primaryAccent} />
+            <Text style={styles.improvementHeader}>KEY TAKEAWAY TO REMEMBER</Text>
           </View>
           <Text style={styles.improvementText}>{summary.top_improvement}</Text>
-        </View>
+        </NeuCard>
 
         {/* Discovered Vocabulary Words */}
         {summary.new_words && summary.new_words.length > 0 && (
-          <View style={styles.card}>
+          <NeuCard variant="raised" style={styles.card}>
             <View style={styles.cardHeader}>
-              <BookOpen size={18} color={Colors.primary} />
-              <Text style={styles.cardTitle}>NEW VOCABULARY DISCOVERED</Text>
+              <BookOpen size={18} color={Colors.primaryAccent} />
+              <Text style={styles.cardTitle}>NEW VOCABULARY</Text>
             </View>
             <View style={styles.vocabGrid}>
               {summary.new_words.map((w, idx) => (
@@ -98,21 +103,22 @@ export default function SessionSummaryScreen() {
                 </View>
               ))}
             </View>
-          </View>
+          </NeuCard>
         )}
 
         {/* Encouraging Note */}
-        <View style={styles.encouragementCard}>
+        <NeuCard variant="raisedSm" style={styles.encouragementCard}>
           <Text style={styles.encouragementText}>"{summary.encouragement}"</Text>
-          <Text style={styles.coachSignature}>— Echo AI Speaking Coach</Text>
-        </View>
+          <Text style={styles.coachSignature}>— Echo Speaking Coach</Text>
+        </NeuCard>
 
         {/* Action Button */}
         <Button
           title="Back to Dashboard"
           onPress={handleDone}
+          variant="accent"
           size="lg"
-          icon={<ArrowRight size={18} color={Colors.onPrimary} />}
+          icon={<ArrowRight size={18} color={Colors.onPrimaryAccent} />}
         />
       </ScrollView>
     </SafeAreaView>
@@ -135,19 +141,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   checkCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    ...NeuShadows.sunken,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   heroTitle: {
     ...Typography.headlineLg,
     color: Colors.onSurface,
+    fontWeight: '800',
   },
   heroSubtitle: {
     ...Typography.bodyMd,
@@ -155,16 +160,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   heroBold: {
-    color: Colors.primary,
-    fontWeight: '600',
+    color: Colors.primaryAccent,
+    fontWeight: '700',
   },
   card: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    borderRadius: Radius.lg,
-    padding: Spacing.md,
-    gap: 12,
+    padding: Spacing.lg,
+    gap: 14,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -172,9 +173,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardTitle: {
-    ...Typography.labelLg,
+    ...Typography.labelSm,
     color: Colors.muted,
     textTransform: 'uppercase',
+    fontWeight: '800',
+    letterSpacing: 0.8,
   },
   scoreRow: {
     gap: 6,
@@ -186,23 +189,23 @@ const styles = StyleSheet.create({
   scoreLabel: {
     ...Typography.bodySm,
     color: Colors.onSurface,
+    fontWeight: '600',
   },
   scoreValue: {
     ...Typography.labelLg,
-    color: Colors.primary,
+    color: Colors.primaryAccent,
+    fontWeight: '800',
   },
   improvementCard: {
-    backgroundColor: Colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    borderRadius: Radius.lg,
-    padding: Spacing.md,
-    gap: 8,
+    padding: Spacing.lg,
+    gap: 10,
   },
   improvementHeader: {
-    ...Typography.labelLg,
-    color: Colors.primary,
+    ...Typography.labelSm,
+    color: Colors.primaryAccent,
     textTransform: 'uppercase',
+    fontWeight: '800',
+    letterSpacing: 0.8,
   },
   improvementText: {
     ...Typography.bodyMd,
@@ -218,22 +221,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: Radius.md,
-    backgroundColor: Colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    ...NeuShadows.raisedSm,
   },
   vocabText: {
     ...Typography.labelMd,
-    color: Colors.primary,
-    fontWeight: '600',
+    color: Colors.primaryAccent,
+    fontWeight: '700',
   },
   encouragementCard: {
     padding: 16,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surfaceCard,
     gap: 6,
+    backgroundColor: Colors.surfaceSubtle,
   },
   encouragementText: {
     ...Typography.bodyMd,

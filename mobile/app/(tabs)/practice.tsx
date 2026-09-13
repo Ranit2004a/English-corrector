@@ -3,10 +3,11 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { PRACTICE_TOPICS } from '../../constants/topics';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { Colors, NeuShadows, Radius, Spacing, Typography } from '../../constants/theme';
 import { useUserStore } from '../../store/useUserStore';
 import { usePracticeStore } from '../../store/usePracticeStore';
 import { Badge } from '../../components/ui/Badge';
+import { NeuCard } from '../../components/ui/NeuCard';
 import {
   Sun,
   Briefcase,
@@ -25,27 +26,41 @@ const CATEGORIES = ['All', 'Everyday', 'Professional', 'Advanced', 'Free Convers
 
 export default function PracticeScreen() {
   const router = useRouter();
-  const user = useUserStore(state => state.user);
-  const startSession = usePracticeStore(state => state.startSession);
+  const user = useUserStore((state) => state.user);
+  const startSession = usePracticeStore((state) => state.startSession);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
-  const filteredTopics = selectedCategory === 'All'
-    ? PRACTICE_TOPICS
-    : PRACTICE_TOPICS.filter(t => t.category === selectedCategory);
+  const filteredTopics =
+    selectedCategory === 'All'
+      ? PRACTICE_TOPICS
+      : PRACTICE_TOPICS.filter((t) => t.category === selectedCategory);
 
   const getTopicIcon = (icon: string) => {
+    const size = 20;
+    const color = Colors.primaryAccent;
     switch (icon) {
-      case 'wb_sunny': return <Sun size={20} color={Colors.primary} />;
-      case 'restaurant': return <Coffee size={20} color={Colors.primary} />;
-      case 'flight_takeoff': return <Plane size={20} color={Colors.primary} />;
-      case 'coffee': return <Coffee size={20} color={Colors.primary} />;
-      case 'sports_esports': return <Gamepad2 size={20} color={Colors.primary} />;
-      case 'work_outline': return <Briefcase size={20} color={Colors.primary} />;
-      case 'groups': return <Users size={20} color={Colors.primary} />;
-      case 'forum': return <MessageSquare size={20} color={Colors.primary} />;
-      case 'smart_toy': return <Bot size={20} color={Colors.primary} />;
-      case 'eco': return <Leaf size={20} color={Colors.primary} />;
-      default: return <Sparkles size={20} color={Colors.primary} />;
+      case 'wb_sunny':
+        return <Sun size={size} color={color} />;
+      case 'restaurant':
+        return <Coffee size={size} color={color} />;
+      case 'flight_takeoff':
+        return <Plane size={size} color={color} />;
+      case 'coffee':
+        return <Coffee size={size} color={color} />;
+      case 'sports_esports':
+        return <Gamepad2 size={size} color={color} />;
+      case 'work_outline':
+        return <Briefcase size={size} color={color} />;
+      case 'groups':
+        return <Users size={size} color={color} />;
+      case 'forum':
+        return <MessageSquare size={size} color={color} />;
+      case 'smart_toy':
+        return <Bot size={size} color={color} />;
+      case 'eco':
+        return <Leaf size={size} color={color} />;
+      default:
+        return <Sparkles size={size} color={color} />;
     }
   };
 
@@ -62,42 +77,45 @@ export default function PracticeScreen() {
         <Text style={styles.subtitle}>Select a subject or start an open conversation</Text>
       </View>
 
-      {/* Category Filter Chips */}
+      {/* Category Filter Chips (Tactile Neumorphic Pills) */}
       <View style={styles.filterContainer}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterBar}
         >
-          {CATEGORIES.map(cat => (
-            <TouchableOpacity
-              key={cat}
-              activeOpacity={0.8}
-              onPress={() => setSelectedCategory(cat)}
-              style={[
-                styles.chip,
-                selectedCategory === cat && styles.chipActive,
-              ]}
-            >
-              <Text
+          {CATEGORIES.map((cat) => {
+            const isActive = selectedCategory === cat;
+            return (
+              <TouchableOpacity
+                key={cat}
+                activeOpacity={0.8}
+                onPress={() => setSelectedCategory(cat)}
                 style={[
-                  styles.chipText,
-                  selectedCategory === cat && styles.chipTextActive,
+                  styles.chip,
+                  isActive ? styles.chipActive : styles.chipIdle,
                 ]}
               >
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.chipText,
+                    isActive ? styles.chipTextActive : styles.chipTextIdle,
+                  ]}
+                >
+                  {cat}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
       {/* Topics List */}
       <ScrollView contentContainerStyle={styles.listContainer} showsVerticalScrollIndicator={false}>
-        {filteredTopics.map(topic => (
-          <TouchableOpacity
+        {filteredTopics.map((topic) => (
+          <NeuCard
             key={topic.id}
-            activeOpacity={0.88}
+            variant="raised"
             style={styles.card}
             onPress={() => handleSelectTopic(topic.title, topic.starter_prompt)}
           >
@@ -105,7 +123,7 @@ export default function PracticeScreen() {
               <View style={styles.iconCircle}>
                 {getTopicIcon(topic.icon)}
               </View>
-              <Badge label={topic.category} variant="default" />
+              <Badge label={topic.category} variant="accent" />
             </View>
 
             <View style={styles.cardContent}>
@@ -114,12 +132,16 @@ export default function PracticeScreen() {
             </View>
 
             <View style={styles.cardFooter}>
-              <Text style={styles.starterPreview}>"{topic.starter_prompt.slice(0, 50)}..."</Text>
+              <View style={styles.starterPreviewBox}>
+                <Text style={styles.starterPreview} numberOfLines={1}>
+                  "{topic.starter_prompt}"
+                </Text>
+              </View>
               <View style={styles.arrowCircle}>
-                <ArrowRight size={14} color={Colors.primary} />
+                <ArrowRight size={14} color={Colors.primaryAccent} />
               </View>
             </View>
-          </TouchableOpacity>
+          </NeuCard>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -139,6 +161,7 @@ const styles = StyleSheet.create({
   title: {
     ...Typography.headlineMd,
     color: Colors.onSurface,
+    fontWeight: '800',
   },
   subtitle: {
     ...Typography.bodySm,
@@ -146,54 +169,49 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   filterContainer: {
-    height: 48,
+    height: 54,
     marginVertical: 4,
     justifyContent: 'center',
   },
   filterBar: {
     paddingHorizontal: Spacing.margin,
-    gap: 8,
+    gap: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },
   chip: {
-    height: 36,
+    height: 38,
     paddingHorizontal: 16,
     borderRadius: Radius.full,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  chipIdle: {
+    ...NeuShadows.raisedSm,
+  },
   chipActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    ...NeuShadows.sunken,
+    backgroundColor: Colors.surfaceSunken,
   },
   chipText: {
     fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '500',
-    color: Colors.muted,
-    includeFontPadding: false,
-    textAlignVertical: 'center',
+    fontWeight: '600',
+  },
+  chipTextIdle: {
+    color: Colors.onSurfaceVariant,
   },
   chipTextActive: {
-    color: Colors.onPrimary,
-    fontWeight: '600',
+    color: Colors.primaryAccent,
+    fontWeight: '800',
   },
   listContainer: {
     paddingHorizontal: Spacing.margin,
     paddingBottom: 40,
-    gap: 12,
+    gap: 14,
   },
   card: {
     padding: 16,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surface,
-    gap: 10,
+    gap: 12,
   },
   cardTop: {
     flexDirection: 'row',
@@ -201,50 +219,52 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconCircle: {
-    width: 36,
-    height: 36,
+    width: 42,
+    height: 42,
     borderRadius: Radius.md,
-    backgroundColor: Colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    ...NeuShadows.sunken,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardContent: {
-    gap: 3,
+    gap: 4,
   },
   cardTitle: {
     ...Typography.headlineSm,
     color: Colors.onSurface,
+    fontWeight: '700',
   },
   cardSubtitle: {
     ...Typography.bodySm,
     color: Colors.muted,
   },
   cardFooter: {
-    marginTop: 4,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: Colors.outline,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
+  },
+  starterPreviewBox: {
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: Radius.sm,
+    backgroundColor: Colors.surfaceSubtle,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
   },
   starterPreview: {
     ...Typography.bodySm,
     fontSize: 12,
     color: Colors.muted,
     fontStyle: 'italic',
-    flex: 1,
   },
   arrowCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    ...NeuShadows.raisedSm,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 8,
   },
 });

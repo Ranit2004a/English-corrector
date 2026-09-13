@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { Colors, NeuShadows, Radius, Spacing, Typography } from '../../constants/theme';
 import { VocabularyRepository } from '../../db/repositories/vocabularyRepository';
 import { VocabularyItem } from '../../types';
 import { TTSService } from '../../services/tts';
-import { ArrowLeft, Volume2, CheckCircle2, Circle, BookOpen } from 'lucide-react-native';
+import { NeuIconButton } from '../../components/ui/NeuIconButton';
+import { NeuCard } from '../../components/ui/NeuCard';
+import { ArrowLeft, Volume2, CheckCircle2, Circle, BookOpen, Sparkles } from 'lucide-react-native';
 
 export default function VocabularyScreen() {
   const router = useRouter();
@@ -23,7 +25,6 @@ export default function VocabularyScreen() {
       list = await VocabularyRepository.getAllVocabulary();
     }
 
-    // Default curated words if fresh install
     if (list.length === 0) {
       list = [
         {
@@ -69,8 +70,8 @@ export default function VocabularyScreen() {
 
   const handleToggleLearned = async (id: string, current: boolean) => {
     await VocabularyRepository.toggleLearned(id, !current);
-    setVocabulary(prev =>
-      prev.map(item => (item.id === id ? { ...item, learned: !current } : item))
+    setVocabulary((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, learned: !current } : item))
     );
   };
 
@@ -82,23 +83,25 @@ export default function VocabularyScreen() {
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft size={20} color={Colors.onSurface} />
-        </TouchableOpacity>
+        <NeuIconButton
+          icon={<ArrowLeft size={18} color={Colors.onSurface} />}
+          size={40}
+          onPress={() => router.back()}
+        />
         <View style={styles.headerTitleContainer}>
           <Text style={styles.title}>Vocabulary Bank</Text>
           <Text style={styles.subtitle}>{vocabulary.length} words collected</Text>
         </View>
       </View>
 
-      {/* Filter Tabs */}
+      {/* Filter Tabs (Neumorphic Segmented Control) */}
       <View style={styles.filterRow}>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => setFilterLearned('all')}
-          style={[styles.filterTab, filterLearned === 'all' && styles.filterTabActive]}
+          style={[styles.filterTab, filterLearned === 'all' ? styles.filterTabActive : styles.filterTabIdle]}
         >
-          <Text style={[styles.filterText, filterLearned === 'all' && styles.filterTextActive]}>
+          <Text style={[styles.filterText, filterLearned === 'all' ? styles.filterTextActive : styles.filterTextIdle]}>
             All ({vocabulary.length})
           </Text>
         </TouchableOpacity>
@@ -106,9 +109,14 @@ export default function VocabularyScreen() {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => setFilterLearned('unlearned')}
-          style={[styles.filterTab, filterLearned === 'unlearned' && styles.filterTabActive]}
+          style={[styles.filterTab, filterLearned === 'unlearned' ? styles.filterTabActive : styles.filterTabIdle]}
         >
-          <Text style={[styles.filterText, filterLearned === 'unlearned' && styles.filterTextActive]}>
+          <Text
+            style={[
+              styles.filterText,
+              filterLearned === 'unlearned' ? styles.filterTextActive : styles.filterTextIdle,
+            ]}
+          >
             Learning
           </Text>
         </TouchableOpacity>
@@ -116,9 +124,14 @@ export default function VocabularyScreen() {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => setFilterLearned('learned')}
-          style={[styles.filterTab, filterLearned === 'learned' && styles.filterTabActive]}
+          style={[styles.filterTab, filterLearned === 'learned' ? styles.filterTabActive : styles.filterTabIdle]}
         >
-          <Text style={[styles.filterText, filterLearned === 'learned' && styles.filterTextActive]}>
+          <Text
+            style={[
+              styles.filterText,
+              filterLearned === 'learned' ? styles.filterTextActive : styles.filterTextIdle,
+            ]}
+          >
             Mastered
           </Text>
         </TouchableOpacity>
@@ -127,7 +140,7 @@ export default function VocabularyScreen() {
       {/* Vocabulary Items List */}
       <ScrollView contentContainerStyle={styles.listContainer} showsVerticalScrollIndicator={false}>
         {vocabulary.map((item) => (
-          <View key={item.id} style={styles.card}>
+          <NeuCard key={item.id} variant="raised" style={styles.card}>
             <View style={styles.cardTop}>
               <View style={styles.wordRow}>
                 <Text style={styles.wordText}>{item.word}</Text>
@@ -136,7 +149,7 @@ export default function VocabularyScreen() {
                   onPress={() => handlePronounce(item.word)}
                   style={styles.audioTrigger}
                 >
-                  <Volume2 size={16} color={Colors.primary} />
+                  <Volume2 size={16} color={Colors.primaryAccent} />
                 </TouchableOpacity>
               </View>
 
@@ -146,23 +159,23 @@ export default function VocabularyScreen() {
                 style={styles.checkButton}
               >
                 {item.learned ? (
-                  <CheckCircle2 size={22} color={Colors.primary} />
+                  <CheckCircle2 size={24} color={Colors.success} />
                 ) : (
-                  <Circle size={22} color={Colors.outlineVariant} />
+                  <Circle size={24} color={Colors.mutedLight} />
                 )}
               </TouchableOpacity>
             </View>
 
             <View style={styles.block}>
-              <Text style={styles.label}>Meaning</Text>
+              <Text style={styles.label}>MEANING</Text>
               <Text style={styles.meaningText}>{item.meaning}</Text>
             </View>
 
             <View style={styles.exampleBlock}>
-              <Text style={styles.exampleLabel}>Example</Text>
+              <Text style={styles.exampleLabel}>EXAMPLE</Text>
               <Text style={styles.exampleText}>"{item.example}"</Text>
             </View>
-          </View>
+          </NeuCard>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -178,17 +191,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.margin,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.outline,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.sm,
     gap: 12,
-  },
-  backButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   headerTitleContainer: {
     flex: 1,
@@ -196,6 +201,7 @@ const styles = StyleSheet.create({
   title: {
     ...Typography.headlineSm,
     color: Colors.onSurface,
+    fontWeight: '800',
   },
   subtitle: {
     ...Typography.bodySm,
@@ -205,41 +211,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: Spacing.margin,
     paddingVertical: 10,
-    gap: 8,
+    gap: 10,
   },
   filterTab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
     borderRadius: Radius.full,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surface,
+  },
+  filterTabIdle: {
+    ...NeuShadows.raisedSm,
   },
   filterTabActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    ...NeuShadows.sunken,
+    backgroundColor: Colors.surfaceSunken,
   },
   filterText: {
     ...Typography.labelMd,
+  },
+  filterTextIdle: {
     color: Colors.muted,
+    fontWeight: '600',
   },
   filterTextActive: {
-    color: Colors.onPrimary,
-    fontWeight: '600',
+    color: Colors.primaryAccent,
+    fontWeight: '800',
   },
   listContainer: {
     paddingHorizontal: Spacing.margin,
     paddingBottom: 40,
-    gap: 12,
+    gap: 14,
   },
   card: {
-    padding: 16,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surface,
-    gap: 10,
+    padding: Spacing.md,
+    gap: 12,
   },
   cardTop: {
     flexDirection: 'row',
@@ -249,21 +254,20 @@ const styles = StyleSheet.create({
   wordRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   wordText: {
     ...Typography.headlineSm,
     color: Colors.onSurface,
+    fontWeight: '800',
   },
   audioTrigger: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    ...NeuShadows.raisedSm,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.surfaceSubtle,
   },
   checkButton: {
     padding: 4,
@@ -274,28 +278,28 @@ const styles = StyleSheet.create({
   label: {
     ...Typography.labelSm,
     color: Colors.muted,
+    fontWeight: '700',
   },
   meaningText: {
-    ...Typography.bodySm,
+    ...Typography.bodyMd,
     color: Colors.onSurface,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   exampleBlock: {
-    backgroundColor: Colors.surfaceSubtle,
-    padding: 10,
-    borderRadius: Radius.sm,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    gap: 2,
+    ...NeuShadows.sunken,
+    padding: 12,
+    borderRadius: Radius.md,
+    gap: 4,
   },
   exampleLabel: {
     ...Typography.labelSm,
-    color: Colors.muted,
-    fontWeight: '600',
+    color: Colors.primaryAccent,
+    fontWeight: '700',
   },
   exampleText: {
     ...Typography.bodySm,
     color: Colors.onSurface,
     fontStyle: 'italic',
+    lineHeight: 20,
   },
 });

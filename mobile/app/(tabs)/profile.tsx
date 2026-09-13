@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,11 +11,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { Colors, NeuShadows, Radius, Spacing, Typography } from '../../constants/theme';
 import { useUserStore } from '../../store/useUserStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { CEFRLevel } from '../../types';
 import { Badge } from '../../components/ui/Badge';
+import { Button } from '../../components/ui/Button';
+import { NeuCard } from '../../components/ui/NeuCard';
 import { ApiService } from '../../services/api';
 import {
   User,
@@ -28,6 +30,7 @@ import {
   Check,
   Server,
   RefreshCw,
+  Sparkles,
 } from 'lucide-react-native';
 
 const CEFR_LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -38,18 +41,30 @@ export default function ProfileScreen() {
   const { user, setLevel, saveUser } = useUserStore();
   const { settings, updateSetting, clearAllData, exportData } = useSettingsStore();
 
-  const [backendUrl, setBackendUrl] = useState(settings.backend_url || 'http://localhost:8000');
+  const [backendUrl, setBackendUrl] = useState(
+    settings.backend_url && settings.backend_url !== 'http://localhost:8000'
+      ? settings.backend_url
+      : 'http://10.218.116.212:8000'
+  );
   const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
   const [isTestingApi, setIsTestingApi] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportedJson, setExportedJson] = useState('');
 
+  useEffect(() => {
+    if (settings.backend_url && settings.backend_url !== 'http://localhost:8000') {
+      setBackendUrl(settings.backend_url);
+    } else {
+      setBackendUrl('http://10.218.116.212:8000');
+    }
+  }, [settings.backend_url]);
+
   const handleTestConnection = async () => {
     setIsTestingApi(true);
     setConnectionStatus(null);
     try {
-      updateSetting('backend_url', backendUrl.trim());
+      await updateSetting('backend_url', backendUrl.trim());
       const res = await ApiService.checkHealth();
       if (res.status === 'healthy') {
         setConnectionStatus(`Connected (AI Ready: ${res.ai_ready ? 'Yes' : 'Simulation fallback'})`);
@@ -82,202 +97,208 @@ export default function ProfileScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Settings & Profile</Text>
-          <Text style={styles.subtitle}>Manage your learning preferences and local data</Text>
+          <Text style={styles.subtitle}>Learning preferences & local database controls</Text>
         </View>
 
         {/* User Card */}
-        <View style={styles.card}>
+        <NeuCard variant="raised" style={styles.card}>
           <View style={styles.userRow}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>{(user?.name || 'U').charAt(0).toUpperCase()}</Text>
             </View>
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{user?.name || 'Learner'}</Text>
-              <Text style={styles.userGoal}>{user?.goal || 'General fluency'}</Text>
+              <Text style={styles.userGoal}>{user?.goal || 'General English Fluency'}</Text>
             </View>
-            <Badge label={user?.level || 'B1'} variant="inverted" />
+            <Badge label={user?.level || 'B1'} variant="accent" />
           </View>
-        </View>
+        </NeuCard>
 
-        {/* CEFR English Level Selector */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>TARGET ENGLISH LEVEL</Text>
-          <View style={styles.levelGrid}>
+        {/* CEFR Level Selection */}
+        <NeuCard variant="raised" style={styles.card}>
+          <View style={styles.sectionTitleRow}>
+            <Sliders size={18} color={Colors.primaryAccent} />
+            <Text style={styles.cardSectionTitle}>TARGET CEFR LEVEL</Text>
+          </View>
+          <Text style={styles.hintText}>
+            Echo adapts conversation speed and correction strictness according to your level.
+          </Text>
+
+          <View style={styles.levelSelector}>
             {CEFR_LEVELS.map((lvl) => {
-              const isSelected = (user?.level || 'B1') === lvl;
+              const isSelected = user?.level === lvl;
               return (
                 <TouchableOpacity
                   key={lvl}
                   activeOpacity={0.8}
                   onPress={() => setLevel(lvl)}
-                  style={[styles.levelCard, isSelected && styles.levelCardActive]}
+                  style={[
+                    styles.levelPill,
+                    isSelected ? styles.levelPillActive : styles.levelPillIdle,
+                  ]}
                 >
-                  <Text style={[styles.levelLabel, isSelected && styles.levelLabelActive]}>
+                  <Text
+                    style={[
+                      styles.levelPillText,
+                      isSelected ? styles.levelPillTextActive : styles.levelPillTextIdle,
+                    ]}
+                  >
                     {lvl}
-                  </Text>
-                  <Text style={[styles.levelSub, isSelected && styles.levelSubActive]}>
-                    {lvl === 'A1' || lvl === 'A2'
-                      ? 'Beginner'
-                      : lvl === 'B1' || lvl === 'B2'
-                      ? 'Intermediate'
-                      : 'Advanced'}
                   </Text>
                 </TouchableOpacity>
               );
             })}
           </View>
-        </View>
+        </NeuCard>
 
-        {/* Voice & Speech Speed Settings */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>SPEECH & AUDIO</Text>
-          <View style={styles.card}>
-            <View style={styles.settingRow}>
-              <View style={styles.settingMeta}>
-                <Volume2 size={18} color={Colors.primary} />
-                <Text style={styles.settingTitle}>AI Speaking Speed</Text>
-              </View>
-              <Text style={styles.settingValue}>{settings.speech_rate}x</Text>
-            </View>
+        {/* Speech & Audio Settings */}
+        <NeuCard variant="raised" style={styles.card}>
+          <View style={styles.sectionTitleRow}>
+            <Volume2 size={18} color={Colors.primaryAccent} />
+            <Text style={styles.cardSectionTitle}>SPEECH PLAYBACK SPEED</Text>
+          </View>
+          <Text style={styles.hintText}>Control how fast Echo reads responses aloud.</Text>
 
-            <View style={styles.speedRow}>
-              {SPEECH_RATES.map((rate) => {
-                const isSelected = settings.speech_rate === rate;
-                return (
-                  <TouchableOpacity
-                    key={rate}
-                    activeOpacity={0.8}
-                    onPress={() => updateSetting('speech_rate', rate)}
-                    style={[styles.speedChip, isSelected && styles.speedChipActive]}
+          <View style={styles.rateSelector}>
+            {SPEECH_RATES.map((rate) => {
+              const isSelected = settings.speech_rate === rate;
+              return (
+                <TouchableOpacity
+                  key={rate}
+                  activeOpacity={0.8}
+                  onPress={() => updateSetting('speech_rate', rate)}
+                  style={[
+                    styles.ratePill,
+                    isSelected ? styles.ratePillActive : styles.ratePillIdle,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.ratePillText,
+                      isSelected ? styles.ratePillTextActive : styles.ratePillTextIdle,
+                    ]}
                   >
-                    <Text
-                      style={[styles.speedChipText, isSelected && styles.speedChipTextActive]}
-                    >
-                      {rate}x
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+                    {rate}x
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
-        </View>
+        </NeuCard>
 
-        {/* Backend Endpoint Config */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>FASTAPI BACKEND ENDPOINT</Text>
-          <View style={styles.card}>
-            <View style={styles.inputRow}>
-              <Server size={18} color={Colors.muted} />
-              <TextInput
-                style={styles.urlInput}
-                value={backendUrl}
-                onChangeText={setBackendUrl}
-                placeholder="http://localhost:8000"
-                autoCapitalize="none"
-              />
-            </View>
-
-            <TouchableOpacity
-              activeOpacity={0.85}
-              style={styles.testButton}
-              onPress={handleTestConnection}
-              disabled={isTestingApi}
-            >
-              <RefreshCw size={14} color={Colors.primary} />
-              <Text style={styles.testButtonText}>
-                {isTestingApi ? 'Testing...' : 'Test Connection'}
-              </Text>
-            </TouchableOpacity>
-
-            {connectionStatus && (
-              <Text style={styles.connectionStatusText}>{connectionStatus}</Text>
-            )}
+        {/* Backend & AI Connection */}
+        <NeuCard variant="raised" style={styles.card}>
+          <View style={styles.sectionTitleRow}>
+            <Server size={18} color={Colors.primaryAccent} />
+            <Text style={styles.cardSectionTitle}>BACKEND AI SERVER</Text>
           </View>
-        </View>
-
-        {/* Local Storage & Export Controls */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>LOCAL-FIRST DATABASE</Text>
-          <View style={styles.card}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.actionRow}
-              onPress={handleExport}
-            >
-              <View style={styles.actionLeft}>
-                <Download size={18} color={Colors.primary} />
-                <Text style={styles.actionText}>Export Local Data (JSON)</Text>
-              </View>
-            </TouchableOpacity>
-
-            <View style={styles.divider} />
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.actionRow}
-              onPress={() => setShowClearModal(true)}
-            >
-              <View style={styles.actionLeft}>
-                <Trash2 size={18} color={Colors.error} />
-                <Text style={[styles.actionText, { color: Colors.error }]}>Clear All Local Data</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* About App */}
-        <View style={styles.aboutCard}>
-          <Info size={16} color={Colors.muted} />
-          <Text style={styles.aboutText}>
-            Echo AI Speaking Coach is 100% local-first. All your audio transcripts, mistake
-            history, vocabulary, and scores are stored exclusively on your device in SQLite.
+          <Text style={styles.hintText}>
+            FastAPI / Gemini endpoint for live grammar correction & dialogue.
           </Text>
-        </View>
-      </ScrollView>
 
-      {/* Confirmation Modal for Clearing Data */}
-      <Modal visible={showClearModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Clear Local Database?</Text>
-            <Text style={styles.modalDesc}>
-              This will permanently delete all your conversation transcripts, mistake history,
-              progress, and vocabulary stored on this device. This action cannot be undone.
-            </Text>
+          {/* Sunken Input Box */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={backendUrl}
+              onChangeText={setBackendUrl}
+              placeholder="http://192.168.1.X:8000"
+              placeholderTextColor={Colors.muted}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
 
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.modalCancel}
-                onPress={() => setShowClearModal(false)}
-              >
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
+          <Button
+            title={isTestingApi ? 'Connecting...' : 'Test Connection'}
+            onPress={handleTestConnection}
+            variant="secondary"
+            loading={isTestingApi}
+            icon={<RefreshCw size={16} color={Colors.onSurface} />}
+            iconPosition="left"
+          />
 
-              <TouchableOpacity style={styles.modalDelete} onPress={handleClearData}>
-                <Text style={styles.modalDeleteText}>Yes, Clear Everything</Text>
-              </TouchableOpacity>
+          {connectionStatus && (
+            <View style={styles.statusBox}>
+              <Info size={14} color={Colors.primaryAccent} />
+              <Text style={styles.statusText}>{connectionStatus}</Text>
             </View>
-          </View>
-        </View>
-      </Modal>
+          )}
+        </NeuCard>
 
-      {/* Export JSON Modal */}
-      <Modal visible={showExportModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: '80%' }]}>
-            <Text style={styles.modalTitle}>Local Database Export</Text>
-            <ScrollView style={styles.jsonPreview}>
-              <Text style={styles.jsonText}>{exportedJson}</Text>
-            </ScrollView>
-            <TouchableOpacity
-              style={styles.modalCancel}
-              onPress={() => setShowExportModal(false)}
-            >
-              <Text style={styles.modalCancelText}>Close</Text>
-            </TouchableOpacity>
+        {/* Local Storage & Privacy */}
+        <NeuCard variant="raised" style={styles.card}>
+          <View style={styles.sectionTitleRow}>
+            <Database size={18} color={Colors.primaryAccent} />
+            <Text style={styles.cardSectionTitle}>LOCAL DATA MANAGEMENT</Text>
           </View>
-        </View>
-      </Modal>
+          <Text style={styles.hintText}>
+            All conversation logs, mistakes, and vocabulary are stored locally on your device via SQLite.
+          </Text>
+
+          <View style={styles.actionCol}>
+            <Button
+              title="Export Data (JSON)"
+              onPress={handleExport}
+              variant="secondary"
+              icon={<Download size={16} color={Colors.onSurface} />}
+              iconPosition="left"
+            />
+            <Button
+              title="Clear All Local Data"
+              onPress={() => setShowClearModal(true)}
+              variant="danger"
+              icon={<Trash2 size={16} color={Colors.onErrorContainer} />}
+              iconPosition="left"
+            />
+          </View>
+        </NeuCard>
+
+        {/* Clear Data Confirmation Modal */}
+        <Modal visible={showClearModal} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <NeuCard variant="raisedLg" style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Clear All Data?</Text>
+              <Text style={styles.modalBody}>
+                This will permanently delete all session transcripts, recorded mistakes, and vocabulary words from this device.
+              </Text>
+              <View style={styles.modalActions}>
+                <Button
+                  title="Cancel"
+                  variant="secondary"
+                  onPress={() => setShowClearModal(false)}
+                  style={styles.modalBtn}
+                />
+                <Button
+                  title="Yes, Delete"
+                  variant="danger"
+                  onPress={handleClearData}
+                  style={styles.modalBtn}
+                />
+              </View>
+            </NeuCard>
+          </View>
+        </Modal>
+
+        {/* Export JSON Modal */}
+        <Modal visible={showExportModal} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <NeuCard variant="raisedLg" style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Exported Local Data</Text>
+              <View style={styles.jsonBox}>
+                <ScrollView showsVerticalScrollIndicator>
+                  <Text style={styles.jsonText}>{exportedJson}</Text>
+                </ScrollView>
+              </View>
+              <Button
+                title="Close"
+                variant="primary"
+                onPress={() => setShowExportModal(false)}
+              />
+            </NeuCard>
+          </View>
+        </Modal>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -293,11 +314,12 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    paddingBottom: 4,
+    paddingTop: Spacing.xs,
   },
   title: {
     ...Typography.headlineMd,
     color: Colors.onSurface,
+    fontWeight: '800',
   },
   subtitle: {
     ...Typography.bodySm,
@@ -305,31 +327,26 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   card: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    borderRadius: Radius.lg,
-    padding: Spacing.md,
-    gap: 12,
+    padding: Spacing.lg,
+    gap: 14,
   },
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    ...NeuShadows.sunken,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     ...Typography.headlineSm,
-    color: Colors.primary,
+    color: Colors.primaryAccent,
+    fontWeight: '800',
   },
   userInfo: {
     flex: 1,
@@ -338,222 +355,152 @@ const styles = StyleSheet.create({
   userName: {
     ...Typography.headlineSm,
     color: Colors.onSurface,
+    fontWeight: '700',
   },
   userGoal: {
     ...Typography.bodySm,
     color: Colors.muted,
   },
-  section: {
-    gap: 8,
-  },
-  sectionTitle: {
-    ...Typography.labelLg,
-    color: Colors.muted,
-    textTransform: 'uppercase',
-  },
-  levelGrid: {
+  sectionTitleRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 8,
   },
-  levelCard: {
-    width: '31%',
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surface,
-    gap: 2,
-  },
-  levelCardActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  levelLabel: {
-    ...Typography.labelLg,
-    color: Colors.onSurface,
-  },
-  levelLabelActive: {
-    color: Colors.onPrimary,
-  },
-  levelSub: {
+  cardSectionTitle: {
     ...Typography.labelSm,
-    fontSize: 9,
     color: Colors.muted,
+    fontWeight: '800',
+    letterSpacing: 0.8,
   },
-  levelSubActive: {
-    color: Colors.outlineVariant,
+  hintText: {
+    ...Typography.bodySm,
+    color: Colors.secondary,
+    lineHeight: 19,
   },
-  settingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  settingMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  settingTitle: {
-    ...Typography.bodyMd,
-    color: Colors.onSurface,
-  },
-  settingValue: {
-    ...Typography.labelLg,
-    color: Colors.primary,
-  },
-  speedRow: {
+  levelSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 6,
   },
-  speedChip: {
+  levelPill: {
     flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: Radius.sm,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surfaceSubtle,
-  },
-  speedChipActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  speedChipText: {
-    ...Typography.labelSm,
-    color: Colors.muted,
-  },
-  speedChipTextActive: {
-    color: Colors.onPrimary,
-    fontWeight: '700',
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    paddingVertical: 10,
     borderRadius: Radius.md,
-    paddingHorizontal: 12,
-    backgroundColor: Colors.surfaceSubtle,
-  },
-  urlInput: {
-    flex: 1,
-    height: 42,
-    ...Typography.bodySm,
-    color: Colors.onSurface,
-  },
-  testButton: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surface,
   },
-  testButtonText: {
+  levelPillIdle: {
+    ...NeuShadows.raisedSm,
+  },
+  levelPillActive: {
+    ...NeuShadows.sunken,
+    backgroundColor: Colors.surfaceSunken,
+  },
+  levelPillText: {
     ...Typography.labelMd,
-    color: Colors.primary,
   },
-  connectionStatusText: {
-    ...Typography.bodySm,
-    fontSize: 12,
-    color: Colors.muted,
-    textAlign: 'center',
+  levelPillTextIdle: {
+    color: Colors.onSurface,
+    fontWeight: '600',
   },
-  actionRow: {
-    paddingVertical: 8,
+  levelPillTextActive: {
+    color: Colors.primaryAccent,
+    fontWeight: '800',
   },
-  actionLeft: {
+  rateSelector: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+    gap: 8,
   },
-  actionText: {
+  ratePill: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ratePillIdle: {
+    ...NeuShadows.raisedSm,
+  },
+  ratePillActive: {
+    ...NeuShadows.sunken,
+    backgroundColor: Colors.surfaceSunken,
+  },
+  ratePillText: {
+    ...Typography.labelMd,
+  },
+  ratePillTextIdle: {
+    color: Colors.onSurface,
+    fontWeight: '600',
+  },
+  ratePillTextActive: {
+    color: Colors.primaryAccent,
+    fontWeight: '800',
+  },
+  inputContainer: {
+    ...NeuShadows.sunken,
+    borderRadius: Radius.md,
+    paddingHorizontal: 14,
+    height: 48,
+    justifyContent: 'center',
+  },
+  input: {
     ...Typography.bodyMd,
     color: Colors.onSurface,
   },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.outline,
-  },
-  aboutCard: {
+  statusBox: {
     flexDirection: 'row',
-    padding: 14,
+    alignItems: 'center',
+    gap: 8,
+    padding: 10,
     borderRadius: Radius.md,
     backgroundColor: Colors.surfaceSubtle,
     borderWidth: 1,
-    borderColor: Colors.outline,
-    gap: 10,
-    alignItems: 'flex-start',
+    borderColor: 'rgba(255, 255, 255, 0.9)',
   },
-  aboutText: {
+  statusText: {
     ...Typography.bodySm,
-    color: Colors.muted,
+    color: Colors.onSurface,
     flex: 1,
-    lineHeight: 18,
+  },
+  actionCol: {
+    gap: 10,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    alignItems: 'center',
+    backgroundColor: 'rgba(30, 41, 59, 0.45)',
     justifyContent: 'center',
-    padding: Spacing.margin,
-  },
-  modalContent: {
-    width: '100%',
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
+    alignItems: 'center',
     padding: Spacing.lg,
-    gap: 14,
+  },
+  modalCard: {
+    width: '100%',
+    padding: Spacing.xl,
+    gap: 16,
   },
   modalTitle: {
     ...Typography.headlineSm,
     color: Colors.onSurface,
+    fontWeight: '800',
   },
-  modalDesc: {
+  modalBody: {
     ...Typography.bodyMd,
-    color: Colors.muted,
+    color: Colors.secondary,
     lineHeight: 22,
   },
   modalActions: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 6,
+    gap: 12,
+    marginTop: 8,
   },
-  modalCancel: {
+  modalBtn: {
     flex: 1,
-    paddingVertical: 12,
+  },
+  jsonBox: {
+    ...NeuShadows.sunken,
     borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    alignItems: 'center',
-  },
-  modalCancelText: {
-    ...Typography.labelLg,
-    color: Colors.primary,
-  },
-  modalDelete: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.error,
-    alignItems: 'center',
-  },
-  modalDeleteText: {
-    ...Typography.labelLg,
-    color: Colors.onPrimary,
-  },
-  jsonPreview: {
-    maxHeight: 250,
-    backgroundColor: Colors.surfaceSubtle,
-    borderRadius: Radius.md,
-    padding: 10,
+    height: 180,
+    padding: 12,
   },
   jsonText: {
     fontFamily: 'monospace',

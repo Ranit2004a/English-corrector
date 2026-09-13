@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { Colors, NeuShadows, Radius, Spacing, Typography } from '../../constants/theme';
 import { useUserStore } from '../../store/useUserStore';
 import { ProgressRepository } from '../../db/repositories/progressRepository';
 import { CorrectionRepository } from '../../db/repositories/correctionRepository';
 import { DailyProgress } from '../../types';
 import { ProgressBar } from '../../components/ui/ProgressBar';
-import { Flame, Clock, Award, CheckCircle2 } from 'lucide-react-native';
+import { NeuCard } from '../../components/ui/NeuCard';
+import { Flame, Clock, Award, CheckCircle2, TrendingUp } from 'lucide-react-native';
 
 const TIMEFRAMES = ['7 Days', '30 Days', 'All Time'] as const;
 
@@ -34,7 +35,6 @@ export default function ProgressScreen() {
     loadData();
   }, [selectedTimeframe]);
 
-  // Demo fallback chart values if fresh install
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const chartValues = [10, 15, 8, 20, 14, 18, Math.max(12, todayMinutes)];
   const maxVal = Math.max(...chartValues, 25);
@@ -54,154 +54,141 @@ export default function ProgressScreen() {
           <Text style={styles.subtitle}>Speaking consistency & performance metrics</Text>
         </View>
 
-        {/* Timeframe selector */}
-        <View style={styles.timeframeRow}>
-          {TIMEFRAMES.map((tf) => (
-            <TouchableOpacity
-              key={tf}
-              activeOpacity={0.8}
-              onPress={() => setSelectedTimeframe(tf)}
-              style={[styles.tfButton, selectedTimeframe === tf && styles.tfButtonActive]}
-            >
-              <Text
-                style={[styles.tfButtonText, selectedTimeframe === tf && styles.tfButtonTextActive]}
+        {/* Timeframe Selector (Neumorphic Segmented Control) */}
+        <View style={styles.timeframeContainer}>
+          {TIMEFRAMES.map((tf) => {
+            const isActive = selectedTimeframe === tf;
+            return (
+              <TouchableOpacity
+                key={tf}
+                activeOpacity={0.8}
+                onPress={() => setSelectedTimeframe(tf)}
+                style={[
+                  styles.tfButton,
+                  isActive ? styles.tfButtonActive : styles.tfButtonIdle,
+                ]}
               >
-                {tf}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.tfButtonText,
+                    isActive ? styles.tfButtonTextActive : styles.tfButtonTextIdle,
+                  ]}
+                >
+                  {tf}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Top Metric Cards */}
         <View style={styles.topStatsRow}>
-          <View style={styles.statCard}>
+          <NeuCard variant="raisedSm" style={styles.statCard}>
             <View style={styles.statIcon}>
-              <Flame size={18} color={Colors.primary} />
+              <Flame size={20} color="#F59E0B" fill="#F59E0B" />
             </View>
             <Text style={styles.statNumber}>{streak} Days</Text>
             <Text style={styles.statLabel}>Current Streak</Text>
-          </View>
+          </NeuCard>
 
-          <View style={styles.statCard}>
+          <NeuCard variant="raisedSm" style={styles.statCard}>
             <View style={styles.statIcon}>
-              <Clock size={18} color={Colors.primary} />
+              <Clock size={20} color={Colors.primaryAccent} />
             </View>
             <Text style={styles.statNumber}>{todayMinutes + 97}m</Text>
-            <Text style={styles.statLabel}>Total Time Spoken</Text>
-          </View>
+            <Text style={styles.statLabel}>Time Spoken</Text>
+          </NeuCard>
 
-          <View style={styles.statCard}>
+          <NeuCard variant="raisedSm" style={styles.statCard}>
             <View style={styles.statIcon}>
-              <Award size={18} color={Colors.primary} />
+              <Award size={20} color={Colors.success} />
             </View>
             <Text style={styles.statNumber}>86%</Text>
-            <Text style={styles.statLabel}>Overall Fluency</Text>
-          </View>
+            <Text style={styles.statLabel}>Fluency Score</Text>
+          </NeuCard>
         </View>
 
-        {/* Weekly Speaking Activity Chart */}
-        <View style={styles.chartSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>SPEAKING TIME (MINUTES)</Text>
-            <Text style={styles.sectionMeta}>Daily Breakdown</Text>
+        {/* Speaking Practice Activity Chart */}
+        <NeuCard variant="raised" style={styles.chartCard}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardHeaderTitleRow}>
+              <TrendingUp size={18} color={Colors.primaryAccent} />
+              <Text style={styles.cardTitle}>PRACTICE MINUTES</Text>
+            </View>
+            <Text style={styles.cardMeta}>Daily Minutes</Text>
           </View>
 
-          <View style={styles.barChartContainer}>
+          {/* Bar chart with sunken slots and extruded bars */}
+          <View style={styles.chartContainer}>
             {daysOfWeek.map((day, idx) => {
-              const val = chartValues[idx];
-              const heightPercent = Math.min(100, Math.round((val / maxVal) * 100));
-              const isToday = idx === 6;
+              const val = chartValues[idx] || 0;
+              const heightPct = Math.round((val / maxVal) * 100);
+              const isToday = idx === daysOfWeek.length - 1;
 
               return (
-                <View key={day} style={styles.barColumn}>
-                  <Text style={styles.barValue}>{val}m</Text>
-                  <View style={styles.barTrack}>
+                <View key={day} style={styles.chartCol}>
+                  <Text style={styles.barValText}>{val > 0 ? `${val}m` : ''}</Text>
+                  <View style={styles.barSlot}>
                     <View
                       style={[
                         styles.barFill,
-                        {
-                          height: `${heightPercent}%`,
-                          backgroundColor: isToday ? Colors.primary : Colors.muted,
-                        },
+                        { height: `${heightPct}%` },
+                        isToday && styles.barFillToday,
                       ]}
                     />
                   </View>
-                  <Text style={[styles.barLabel, isToday && styles.barLabelToday]}>{day}</Text>
+                  <Text style={[styles.dayLabel, isToday && styles.dayLabelToday]}>{day}</Text>
                 </View>
               );
             })}
           </View>
-        </View>
+        </NeuCard>
 
-        {/* Skill Scores Progress */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>SKILL EVALUATION</Text>
+        {/* Mastery Breakdown */}
+        <NeuCard variant="raised" style={styles.breakdownCard}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>AREA ANALYSIS</Text>
+            <Text style={styles.cardMeta}>{totalMistakes} recorded notes</Text>
+          </View>
 
-          <View style={styles.skillsCard}>
-            <View style={styles.skillRow}>
-              <View style={styles.skillMeta}>
-                <Text style={styles.skillName}>Grammar Accuracy</Text>
-                <Text style={styles.skillScore}>82%</Text>
+          <View style={styles.breakdownList}>
+            {/* Grammar */}
+            <View style={styles.breakdownItem}>
+              <View style={styles.breakdownRow}>
+                <Text style={styles.breakdownName}>Grammar Accuracy</Text>
+                <Text style={styles.breakdownCount}>84%</Text>
               </View>
-              <ProgressBar progress={0.82} height={5} />
+              <ProgressBar progress={84} height={8} color={Colors.primaryAccent} />
             </View>
 
-            <View style={styles.skillRow}>
-              <View style={styles.skillMeta}>
-                <Text style={styles.skillName}>Vocabulary Diversity</Text>
-                <Text style={styles.skillScore}>88%</Text>
+            {/* Vocabulary */}
+            <View style={styles.breakdownItem}>
+              <View style={styles.breakdownRow}>
+                <Text style={styles.breakdownName}>Vocabulary Range</Text>
+                <Text style={styles.breakdownCount}>78%</Text>
               </View>
-              <ProgressBar progress={0.88} height={5} />
+              <ProgressBar progress={78} height={8} color={Colors.primaryAccent} />
             </View>
 
-            <View style={styles.skillRow}>
-              <View style={styles.skillMeta}>
-                <Text style={styles.skillName}>Fluency & Cadence</Text>
-                <Text style={styles.skillScore}>85%</Text>
+            {/* Pronunciation */}
+            <View style={styles.breakdownItem}>
+              <View style={styles.breakdownRow}>
+                <Text style={styles.breakdownName}>Pronunciation & Clarity</Text>
+                <Text style={styles.breakdownCount}>90%</Text>
               </View>
-              <ProgressBar progress={0.85} height={5} />
+              <ProgressBar progress={90} height={8} color={Colors.primaryAccent} />
             </View>
 
-            <View style={styles.skillRow}>
-              <View style={styles.skillMeta}>
-                <Text style={styles.skillName}>Natural Phrasing</Text>
-                <Text style={styles.skillScore}>90%</Text>
+            {/* Naturalness */}
+            <View style={styles.breakdownItem}>
+              <View style={styles.breakdownRow}>
+                <Text style={styles.breakdownName}>Natural Idiomatic Flow</Text>
+                <Text style={styles.breakdownCount}>74%</Text>
               </View>
-              <ProgressBar progress={0.9} height={5} />
+              <ProgressBar progress={74} height={8} color={Colors.primaryAccent} />
             </View>
           </View>
-        </View>
-
-        {/* Mistakes Distribution Breakdown */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CORRECTIONS BY CATEGORY</Text>
-
-          <View style={styles.categoryGrid}>
-            <View style={styles.catCard}>
-              <Text style={styles.catCount}>{categoryCounts.grammar}</Text>
-              <Text style={styles.catName}>Grammar</Text>
-              <Text style={styles.catSub}>Tenses & order</Text>
-            </View>
-
-            <View style={styles.catCard}>
-              <Text style={styles.catCount}>{categoryCounts.vocabulary}</Text>
-              <Text style={styles.catName}>Vocabulary</Text>
-              <Text style={styles.catSub}>Word choice</Text>
-            </View>
-
-            <View style={styles.catCard}>
-              <Text style={styles.catCount}>{categoryCounts.naturalness}</Text>
-              <Text style={styles.catName}>Naturalness</Text>
-              <Text style={styles.catSub}>Idioms & flow</Text>
-            </View>
-
-            <View style={styles.catCard}>
-              <Text style={styles.catCount}>{categoryCounts.pronunciation}</Text>
-              <Text style={styles.catName}>Pronunciation</Text>
-              <Text style={styles.catSub}>Stress & sounds</Text>
-            </View>
-          </View>
-        </View>
+        </NeuCard>
       </ScrollView>
     </SafeAreaView>
   );
@@ -218,186 +205,174 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    paddingBottom: 4,
+    paddingTop: Spacing.xs,
   },
   title: {
     ...Typography.headlineMd,
     color: Colors.onSurface,
+    fontWeight: '800',
   },
   subtitle: {
     ...Typography.bodySm,
     color: Colors.muted,
     marginTop: 2,
   },
-  timeframeRow: {
-    flexDirection: 'row',
-    backgroundColor: Colors.surfaceSubtle,
-    borderRadius: Radius.md,
-    padding: 3,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-  },
-  tfButton: {
-    flex: 1,
-    paddingVertical: 7,
-    alignItems: 'center',
-    borderRadius: Radius.sm,
-  },
-  tfButtonActive: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-  },
-  tfButtonText: {
-    ...Typography.labelMd,
-    color: Colors.muted,
-  },
-  tfButtonTextActive: {
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  topStatsRow: {
+  timeframeContainer: {
     flexDirection: 'row',
     gap: 10,
   },
+  tfButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tfButtonIdle: {
+    ...NeuShadows.raisedSm,
+  },
+  tfButtonActive: {
+    ...NeuShadows.sunken,
+    backgroundColor: Colors.surfaceSunken,
+  },
+  tfButtonText: {
+    ...Typography.labelMd,
+  },
+  tfButtonTextIdle: {
+    color: Colors.muted,
+    fontWeight: '600',
+  },
+  tfButtonTextActive: {
+    color: Colors.primaryAccent,
+    fontWeight: '800',
+  },
+  topStatsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
   statCard: {
     flex: 1,
-    padding: 12,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surface,
+    paddingVertical: 16,
+    paddingHorizontal: 10,
     alignItems: 'center',
-    gap: 2,
+    justifyContent: 'center',
+    gap: 4,
   },
   statIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    ...NeuShadows.sunken,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 4,
   },
   statNumber: {
     ...Typography.headlineSm,
     color: Colors.onSurface,
+    fontWeight: '800',
   },
   statLabel: {
     ...Typography.labelSm,
     color: Colors.muted,
     textAlign: 'center',
-    fontSize: 10,
   },
-  chartSection: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    borderRadius: Radius.lg,
-    padding: Spacing.md,
-    gap: 14,
+  chartCard: {
+    padding: Spacing.lg,
+    gap: Spacing.md,
   },
-  sectionHeader: {
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  sectionTitle: {
-    ...Typography.labelLg,
-    color: Colors.muted,
-    textTransform: 'uppercase',
+  cardHeaderTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  sectionMeta: {
+  cardTitle: {
+    ...Typography.labelSm,
+    color: Colors.muted,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  cardMeta: {
     ...Typography.labelMd,
     color: Colors.muted,
   },
-  barChartContainer: {
+  chartContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-end',
+    justifyContent: 'space-between',
     height: 140,
-    paddingTop: 16,
+    paddingTop: 10,
   },
-  barColumn: {
-    alignItems: 'center',
+  chartCol: {
     flex: 1,
+    alignItems: 'center',
     height: '100%',
     justifyContent: 'flex-end',
     gap: 6,
   },
-  barValue: {
-    ...Typography.labelSm,
-    color: Colors.muted,
+  barValText: {
     fontSize: 10,
+    color: Colors.muted,
+    fontWeight: '600',
   },
-  barTrack: {
-    width: 14,
+  barSlot: {
+    width: 16,
     height: 90,
-    backgroundColor: Colors.surfaceSubtle,
     borderRadius: Radius.full,
+    backgroundColor: Colors.surfaceSunken,
+    borderWidth: 1,
+    borderColor: Colors.neuSunkenBorder,
     justifyContent: 'flex-end',
     overflow: 'hidden',
   },
   barFill: {
     width: '100%',
     borderRadius: Radius.full,
+    backgroundColor: Colors.neuDarkDeep,
   },
-  barLabel: {
+  barFillToday: {
+    backgroundColor: Colors.primaryAccent,
+    shadowColor: Colors.primaryAccent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
+  },
+  dayLabel: {
     ...Typography.labelSm,
     color: Colors.muted,
   },
-  barLabelToday: {
-    color: Colors.primary,
-    fontWeight: '700',
+  dayLabelToday: {
+    color: Colors.primaryAccent,
+    fontWeight: '800',
   },
-  section: {
-    gap: 10,
+  breakdownCard: {
+    padding: Spacing.lg,
+    gap: Spacing.md,
   },
-  skillsCard: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    borderRadius: Radius.lg,
-    padding: Spacing.md,
+  breakdownList: {
     gap: 14,
   },
-  skillRow: {
+  breakdownItem: {
     gap: 6,
   },
-  skillMeta: {
+  breakdownRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  skillName: {
-    ...Typography.bodySm,
-    color: Colors.onSurface,
-  },
-  skillScore: {
+  breakdownName: {
     ...Typography.labelMd,
-    color: Colors.primary,
+    color: Colors.onSurface,
     fontWeight: '600',
   },
-  categoryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  catCard: {
-    width: '48%',
-    backgroundColor: Colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    borderRadius: Radius.lg,
-    padding: 14,
-    gap: 2,
-  },
-  catCount: {
-    ...Typography.headlineSm,
-    color: Colors.primary,
-  },
-  catName: {
-    ...Typography.labelLg,
-    color: Colors.onSurface,
-    marginTop: 2,
-  },
-  catSub: {
-    ...Typography.bodySm,
-    color: Colors.muted,
-    fontSize: 11,
+  breakdownCount: {
+    ...Typography.labelMd,
+    color: Colors.primaryAccent,
+    fontWeight: '700',
   },
 });
