@@ -6,7 +6,7 @@ import warnings
 from typing import Optional, Dict, Any, List, Tuple
 from app.config import settings
 from app.utils.logger import logger
-from app.schemas.conversation import ConversationResponse, SessionSummaryResponse
+from app.schemas.conversation import ConversationResponse, SessionSummaryResponse, SessionEvaluationAI
 from app.schemas.feedback import CorrectionItem, CorrectionCategory, CorrectionSeverity
 
 # Suppress deprecation warnings from legacy genai SDK if imported
@@ -143,6 +143,7 @@ class GeminiService:
             if GENAI_NEW_SDK_AVAILABLE and self._client:
                 config = genai_types.GenerateContentConfig(
                     response_mime_type="application/json",
+                    response_schema=ConversationResponse,
                     temperature=settings.GEMINI_TEMPERATURE,
                     max_output_tokens=settings.GEMINI_MAX_OUTPUT_TOKENS,
                 )
@@ -232,6 +233,7 @@ class GeminiService:
             if GENAI_NEW_SDK_AVAILABLE and self._client:
                 config = genai_types.GenerateContentConfig(
                     response_mime_type="application/json",
+                    response_schema=SessionEvaluationAI,
                     temperature=0.3,
                     max_output_tokens=settings.GEMINI_MAX_OUTPUT_TOKENS,
                 )

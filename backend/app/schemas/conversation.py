@@ -48,6 +48,16 @@ class SessionSummaryRequest(BaseModel):
     corrections_count: int
 
 
+class SessionEvaluationAI(BaseModel):
+    grammar_score: int = Field(description="0-100 score evaluating grammatical accuracy")
+    vocabulary_score: int = Field(description="0-100 score evaluating lexical variety and appropriateness")
+    fluency_score: int = Field(description="0-100 score evaluating conversational flow and sentence continuity")
+    overall_score: int = Field(description="0-100 combined overall score")
+    top_improvement: str = Field(description="1 actionable key lesson or grammar rule to practice")
+    new_words: List[str] = Field(default_factory=list, description="3-4 useful CEFR-level vocabulary words discovered")
+    encouragement: str = Field(description="1-sentence warm personalized encouragement")
+
+
 class SessionSummaryResponse(BaseModel):
     session_id: str
     duration_minutes: int

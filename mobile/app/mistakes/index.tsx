@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { Colors, NeuShadows, Radius, Spacing, Typography } from '../../constants/theme';
 import { CorrectionRepository } from '../../db/repositories/correctionRepository';
 import { Correction, CorrectionCategory } from '../../types';
 import { CorrectionCard } from '../../components/feedback/CorrectionCard';
+import { NeuIconButton } from '../../components/ui/NeuIconButton';
 import { ArrowLeft, AlertCircle } from 'lucide-react-native';
 
 const FILTER_OPTIONS = ['All', 'grammar', 'vocabulary', 'pronunciation', 'naturalness', 'Important'] as const;
@@ -22,12 +23,11 @@ export default function MistakesScreen() {
         list = await CorrectionRepository.getAllCorrections();
       } else if (selectedFilter === 'Important') {
         const all = await CorrectionRepository.getAllCorrections();
-        list = all.filter(c => c.severity === 'important');
+        list = all.filter((c) => c.severity === 'important');
       } else {
         list = await CorrectionRepository.getAllCorrections(selectedFilter as CorrectionCategory);
       }
 
-      // If empty on first run, provide starter demo corrections for visual preview
       if (list.length === 0) {
         list = [
           {
@@ -56,7 +56,7 @@ export default function MistakesScreen() {
             category: 'naturalness',
             severity: 'minor',
             created_at: new Date().toISOString(),
-          }
+          },
         ];
       }
       setCorrections(list);
@@ -68,9 +68,11 @@ export default function MistakesScreen() {
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft size={20} color={Colors.onSurface} />
-        </TouchableOpacity>
+        <NeuIconButton
+          icon={<ArrowLeft size={18} color={Colors.onSurface} />}
+          size={40}
+          onPress={() => router.back()}
+        />
         <View style={styles.headerTitleContainer}>
           <Text style={styles.title}>Mistake History</Text>
           <Text style={styles.subtitle}>{corrections.length} recorded items</Text>
@@ -84,26 +86,29 @@ export default function MistakesScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterBar}
         >
-          {FILTER_OPTIONS.map(opt => (
-            <TouchableOpacity
-              key={opt}
-              activeOpacity={0.8}
-              onPress={() => setSelectedFilter(opt)}
-              style={[
-                styles.chip,
-                selectedFilter === opt && styles.chipActive,
-              ]}
-            >
-              <Text
+          {FILTER_OPTIONS.map((opt) => {
+            const isActive = selectedFilter === opt;
+            return (
+              <TouchableOpacity
+                key={opt}
+                activeOpacity={0.8}
+                onPress={() => setSelectedFilter(opt)}
                 style={[
-                  styles.chipText,
-                  selectedFilter === opt && styles.chipTextActive,
+                  styles.chip,
+                  isActive ? styles.chipActive : styles.chipIdle,
                 ]}
               >
-                {opt.charAt(0).toUpperCase() + opt.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.chipText,
+                    isActive ? styles.chipTextActive : styles.chipTextIdle,
+                  ]}
+                >
+                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
@@ -126,17 +131,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.margin,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.outline,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.sm,
     gap: 12,
-  },
-  backButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   headerTitleContainer: {
     flex: 1,
@@ -144,51 +141,51 @@ const styles = StyleSheet.create({
   title: {
     ...Typography.headlineSm,
     color: Colors.onSurface,
+    fontWeight: '800',
   },
   subtitle: {
     ...Typography.bodySm,
     color: Colors.muted,
   },
   filterContainer: {
-    height: 48,
+    height: 54,
     marginVertical: 4,
     justifyContent: 'center',
   },
   filterBar: {
     paddingHorizontal: Spacing.margin,
-    gap: 8,
+    gap: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },
   chip: {
-    height: 36,
+    height: 38,
     paddingHorizontal: 16,
     borderRadius: Radius.full,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  chipIdle: {
+    ...NeuShadows.raisedSm,
+  },
   chipActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    ...NeuShadows.sunken,
+    backgroundColor: Colors.surfaceSunken,
   },
   chipText: {
     fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '500',
-    color: Colors.muted,
-    includeFontPadding: false,
-    textAlignVertical: 'center',
+    fontWeight: '600',
+  },
+  chipTextIdle: {
+    color: Colors.onSurfaceVariant,
   },
   chipTextActive: {
-    color: Colors.onPrimary,
-    fontWeight: '600',
+    color: Colors.primaryAccent,
+    fontWeight: '800',
   },
   listContainer: {
     paddingHorizontal: Spacing.margin,
     paddingBottom: 40,
-    gap: 8,
+    gap: 12,
   },
 });

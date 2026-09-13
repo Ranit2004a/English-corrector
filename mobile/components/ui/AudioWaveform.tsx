@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Colors } from '../../constants/theme';
+import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import { Colors, NeuShadows, Radius } from '../../constants/theme';
 
 interface AudioWaveformProps {
   active?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
-export const AudioWaveform: React.FC<AudioWaveformProps> = ({ active = false }) => {
+export const AudioWaveform: React.FC<AudioWaveformProps> = ({ active = false, style }) => {
   const [heights, setHeights] = useState<number[]>([6, 12, 20, 14, 8, 16, 24, 12, 6]);
 
   useEffect(() => {
@@ -17,15 +18,15 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({ active = false }) 
 
     const interval = setInterval(() => {
       setHeights(prev =>
-        prev.map(() => Math.floor(Math.random() * 20) + 6)
+        prev.map(() => Math.floor(Math.random() * 22) + 6)
       );
-    }, 150);
+    }, 120);
 
     return () => clearInterval(interval);
   }, [active]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       {heights.map((h, i) => (
         <View
           key={i}
@@ -33,7 +34,9 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({ active = false }) 
             styles.bar,
             {
               height: h,
-              backgroundColor: active ? (i % 2 === 0 ? Colors.primary : Colors.muted) : Colors.outlineVariant,
+              backgroundColor: active
+                ? (i % 2 === 0 ? Colors.primaryAccent : Colors.primary)
+                : Colors.mutedLight,
             },
           ]}
         />
@@ -47,12 +50,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 32,
-    gap: 4,
-    paddingHorizontal: 12,
+    height: 40,
+    gap: 5,
+    paddingHorizontal: 16,
+    borderRadius: Radius.full,
+    ...NeuShadows.sunken,
+    alignSelf: 'center',
   },
   bar: {
-    width: 3,
-    borderRadius: 99,
+    width: 4,
+    borderRadius: Radius.full,
   },
 });

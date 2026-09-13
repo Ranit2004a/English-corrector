@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     
     # Gemini AI & Token Optimization
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
-    GEMINI_MAX_OUTPUT_TOKENS: int = 350
+    GEMINI_MODEL: str = "gemini-3.6-flash"
+    GEMINI_MAX_OUTPUT_TOKENS: int = 1000
     GEMINI_TEMPERATURE: float = 0.4
     MAX_HISTORY_TURNS: int = 4
     ENABLE_RESPONSE_CACHE: bool = True

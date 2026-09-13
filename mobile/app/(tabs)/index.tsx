@@ -2,11 +2,12 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { Colors, NeuShadows, Radius, Spacing, Typography } from '../../constants/theme';
 import { useUserStore } from '../../store/useUserStore';
 import { usePracticeStore } from '../../store/usePracticeStore';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { Badge } from '../../components/ui/Badge';
+import { NeuCard } from '../../components/ui/NeuCard';
 import {
   Flame,
   Mic,
@@ -17,6 +18,7 @@ import {
   Coffee,
   AlertCircle,
   BookOpen,
+  Sparkles,
 } from 'lucide-react-native';
 
 export default function HomeScreen() {
@@ -57,9 +59,9 @@ export default function HomeScreen() {
               <Text style={styles.avatarText}>{(user?.name || 'U').charAt(0).toUpperCase()}</Text>
             </View>
             <View>
-              <Text style={styles.greeting}>Good day, {user?.name || 'Friend'}</Text>
+              <Text style={styles.greeting}>Hello, {user?.name || 'Friend'}</Text>
               <View style={styles.levelRow}>
-                <Text style={styles.subtitle}>Level: </Text>
+                <Text style={styles.subtitle}>Target: </Text>
                 <Badge label={user?.level || 'B1'} variant="accent" />
               </View>
             </View>
@@ -67,13 +69,13 @@ export default function HomeScreen() {
 
           {/* Streak Indicator */}
           <View style={styles.streakBadge}>
-            <Flame size={16} color={Colors.primary} />
+            <Flame size={18} color="#F59E0B" fill="#F59E0B" />
             <Text style={styles.streakText}>{streak} DAYS</Text>
           </View>
         </View>
 
-        {/* Today's Goal */}
-        <View style={styles.section}>
+        {/* Today's Goal (Extruded Card) */}
+        <NeuCard variant="raised" style={styles.goalCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>TODAY'S GOAL</Text>
             <Text style={styles.goalCount}>
@@ -81,29 +83,29 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          <ProgressBar progress={progressPercent} height={6} />
+          <ProgressBar progress={progressPercent} height={10} color={Colors.primaryAccent} />
 
           <View style={styles.goalMetaRow}>
             <Text style={styles.goalMetaText}>
-              {remainingMins > 0 ? `${remainingMins} mins left to hit goal` : 'Daily goal completed!'}
+              {remainingMins > 0 ? `${remainingMins} mins left to complete goal` : 'Goal achieved today!'}
             </Text>
             <Text style={styles.goalMetaPercent}>{progressPercent}%</Text>
           </View>
-        </View>
+        </NeuCard>
 
-        {/* Primary CTA: Daily Conversation Monolith Card */}
-        <View style={styles.dailyCard}>
+        {/* Primary CTA: Daily Conversation Hero Card */}
+        <NeuCard variant="raisedLg" style={styles.dailyCard}>
           <View style={styles.dailyCardHeader}>
             <View style={styles.micCircle}>
-              <Mic size={20} color={Colors.onPrimary} />
+              <Mic size={22} color={Colors.primaryAccent} />
             </View>
-            <Badge label="Recommended" variant="inverted" />
+            <Badge label="Recommended" variant="accent" />
           </View>
 
           <View style={styles.dailyCardBody}>
-            <Text style={styles.dailyCardTitle}>Daily Conversation</Text>
+            <Text style={styles.dailyCardTitle}>Daily Speaking Practice</Text>
             <Text style={styles.dailyCardSubtitle}>
-              Practice natural back-and-forth speaking tailored to your pace today.
+              5 minutes of realistic, natural speaking with instant pronunciation & grammar corrections.
             </Text>
           </View>
 
@@ -112,36 +114,36 @@ export default function HomeScreen() {
             onPress={handleStartDailySpeaking}
             style={styles.dailyButton}
           >
-            <Text style={styles.dailyButtonText}>Start speaking (5 min)</Text>
-            <ArrowRight size={18} color={Colors.primary} />
+            <Text style={styles.dailyButtonText}>Start session (5 min)</Text>
+            <ArrowRight size={18} color={Colors.onPrimaryAccent} />
           </TouchableOpacity>
-        </View>
+        </NeuCard>
 
         {/* Weekly Activity Summary */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>ACTIVITY SUMMARY</Text>
-            <Text style={styles.metaLabel}>Recent</Text>
+            <Text style={styles.sectionTitle}>ACTIVITY SNAPSHOT</Text>
+            <Text style={styles.metaLabel}>This Week</Text>
           </View>
 
           <View style={styles.metricGrid}>
-            <View style={styles.metricCol}>
-              <Text style={styles.metricLabel}>Total Time</Text>
+            <NeuCard variant="raisedSm" style={styles.metricCol}>
+              <Text style={styles.metricLabel}>Time Spoken</Text>
               <Text style={styles.metricValue}>{todayMinutes + 45}m</Text>
               <Text style={styles.metricSub}>this week</Text>
-            </View>
+            </NeuCard>
 
-            <View style={styles.metricCol}>
+            <NeuCard variant="raisedSm" style={styles.metricCol}>
               <Text style={styles.metricLabel}>Fluency</Text>
-              <Text style={styles.metricValue}>86%</Text>
+              <Text style={styles.metricValue}>88%</Text>
               <Text style={styles.metricSub}>Consistent</Text>
-            </View>
+            </NeuCard>
 
-            <View style={styles.metricCol}>
+            <NeuCard variant="raisedSm" style={styles.metricCol}>
               <Text style={styles.metricLabel}>Streak</Text>
               <Text style={styles.metricValue}>{streak}d</Text>
               <Text style={styles.metricSub}>Active</Text>
-            </View>
+            </NeuCard>
           </View>
         </View>
 
@@ -156,8 +158,8 @@ export default function HomeScreen() {
 
           <View style={styles.topicGrid}>
             {/* Topic 1 */}
-            <TouchableOpacity
-              activeOpacity={0.85}
+            <NeuCard
+              variant="raised"
               style={styles.topicCard}
               onPress={() =>
                 handleStartTopic(
@@ -167,15 +169,15 @@ export default function HomeScreen() {
               }
             >
               <View style={styles.topicIcon}>
-                <Sun size={18} color={Colors.primary} />
+                <Sun size={20} color={Colors.primaryAccent} />
               </View>
               <Text style={styles.topicTitle}>Daily Life</Text>
-              <Text style={styles.topicSubtitle}>Morning routines & habits</Text>
-            </TouchableOpacity>
+              <Text style={styles.topicSubtitle}>Routines & habits</Text>
+            </NeuCard>
 
             {/* Topic 2 */}
-            <TouchableOpacity
-              activeOpacity={0.85}
+            <NeuCard
+              variant="raised"
               style={styles.topicCard}
               onPress={() =>
                 handleStartTopic(
@@ -185,15 +187,15 @@ export default function HomeScreen() {
               }
             >
               <View style={styles.topicIcon}>
-                <Briefcase size={18} color={Colors.primary} />
+                <Briefcase size={20} color={Colors.primaryAccent} />
               </View>
               <Text style={styles.topicTitle}>Job Interview</Text>
-              <Text style={styles.topicSubtitle}>Role pitching & stories</Text>
-            </TouchableOpacity>
+              <Text style={styles.topicSubtitle}>Pitch & stories</Text>
+            </NeuCard>
 
             {/* Topic 3 */}
-            <TouchableOpacity
-              activeOpacity={0.85}
+            <NeuCard
+              variant="raised"
               style={styles.topicCard}
               onPress={() =>
                 handleStartTopic(
@@ -203,15 +205,15 @@ export default function HomeScreen() {
               }
             >
               <View style={styles.topicIcon}>
-                <Plane size={18} color={Colors.primary} />
+                <Plane size={20} color={Colors.primaryAccent} />
               </View>
               <Text style={styles.topicTitle}>Travel & Cities</Text>
-              <Text style={styles.topicSubtitle}>Asking directions & food</Text>
-            </TouchableOpacity>
+              <Text style={styles.topicSubtitle}>Directions & culture</Text>
+            </NeuCard>
 
             {/* Topic 4 */}
-            <TouchableOpacity
-              activeOpacity={0.85}
+            <NeuCard
+              variant="raised"
               style={styles.topicCard}
               onPress={() =>
                 handleStartTopic(
@@ -221,41 +223,45 @@ export default function HomeScreen() {
               }
             >
               <View style={styles.topicIcon}>
-                <Coffee size={18} color={Colors.primary} />
+                <Coffee size={20} color={Colors.primaryAccent} />
               </View>
               <Text style={styles.topicTitle}>Coffee & Culture</Text>
-              <Text style={styles.topicSubtitle}>Ordering & casual chats</Text>
-            </TouchableOpacity>
+              <Text style={styles.topicSubtitle}>Ordering & casual</Text>
+            </NeuCard>
           </View>
         </View>
 
         {/* Quick Hub Navigation Cards: Mistakes & Vocabulary */}
         <View style={styles.quickHubRow}>
-          <TouchableOpacity
+          <NeuCard
+            variant="raised"
             style={styles.hubCard}
-            activeOpacity={0.85}
             onPress={() => router.push('/mistakes')}
           >
             <View style={styles.hubHeader}>
-              <AlertCircle size={20} color={Colors.primary} />
+              <View style={styles.hubIconCircle}>
+                <AlertCircle size={20} color={Colors.error} />
+              </View>
               <ArrowRight size={16} color={Colors.muted} />
             </View>
             <Text style={styles.hubTitle}>Mistake History</Text>
-            <Text style={styles.hubSubtitle}>Review & fix past errors</Text>
-          </TouchableOpacity>
+            <Text style={styles.hubSubtitle}>Review and fix recorded errors</Text>
+          </NeuCard>
 
-          <TouchableOpacity
+          <NeuCard
+            variant="raised"
             style={styles.hubCard}
-            activeOpacity={0.85}
             onPress={() => router.push('/vocabulary')}
           >
             <View style={styles.hubHeader}>
-              <BookOpen size={20} color={Colors.primary} />
+              <View style={styles.hubIconCircle}>
+                <BookOpen size={20} color={Colors.primaryAccent} />
+              </View>
               <ArrowRight size={16} color={Colors.muted} />
             </View>
             <Text style={styles.hubTitle}>Vocabulary Bank</Text>
-            <Text style={styles.hubSubtitle}>Learned words & phrases</Text>
-          </TouchableOpacity>
+            <Text style={styles.hubSubtitle}>Saved words & idioms</Text>
+          </NeuCard>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -276,39 +282,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: Spacing.sm,
-    paddingBottom: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.outline,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.xs,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
   avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: Colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    ...NeuShadows.raisedSm,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     ...Typography.headlineSm,
-    color: Colors.primary,
+    color: Colors.primaryAccent,
+    fontWeight: '800',
   },
   greeting: {
     ...Typography.headlineSm,
     color: Colors.onSurface,
+    fontWeight: '700',
   },
   levelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 2,
-    gap: 4,
+    gap: 6,
   },
   subtitle: {
     ...Typography.labelMd,
@@ -317,20 +321,22 @@ const styles = StyleSheet.create({
   streakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: Radius.full,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surfaceSubtle,
+    ...NeuShadows.raisedSm,
   },
   streakText: {
     ...Typography.labelSm,
-    color: Colors.primary,
+    color: Colors.onSurface,
+    fontWeight: '800',
+  },
+  goalCard: {
+    gap: 12,
   },
   section: {
-    gap: 8,
+    gap: 12,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -338,9 +344,11 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   sectionTitle: {
-    ...Typography.labelLg,
+    ...Typography.labelSm,
     color: Colors.muted,
     textTransform: 'uppercase',
+    fontWeight: '800',
+    letterSpacing: 0.8,
   },
   metaLabel: {
     ...Typography.labelMd,
@@ -351,14 +359,13 @@ const styles = StyleSheet.create({
     color: Colors.muted,
   },
   goalBold: {
-    fontWeight: '700',
-    color: Colors.primary,
+    fontWeight: '800',
+    color: Colors.primaryAccent,
   },
   goalMetaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 2,
   },
   goalMetaText: {
     ...Typography.labelMd,
@@ -366,12 +373,10 @@ const styles = StyleSheet.create({
   },
   goalMetaPercent: {
     ...Typography.labelMd,
-    fontWeight: '600',
-    color: Colors.primary,
+    fontWeight: '700',
+    color: Colors.primaryAccent,
   },
   dailyCard: {
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.lg,
     padding: Spacing.lg,
     gap: Spacing.md,
   },
@@ -381,62 +386,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   micCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    ...NeuShadows.sunken,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dailyCardBody: {
-    gap: 4,
+    gap: 6,
   },
   dailyCardTitle: {
     ...Typography.headlineMd,
-    color: Colors.onPrimary,
+    color: Colors.onSurface,
+    fontWeight: '800',
   },
   dailyCardSubtitle: {
     ...Typography.bodySm,
-    color: Colors.outlineVariant,
+    color: Colors.secondary,
+    lineHeight: 20,
   },
   dailyButton: {
-    backgroundColor: Colors.onPrimary,
-    height: 46,
-    borderRadius: Radius.md,
+    ...NeuShadows.accentRaised,
+    height: 52,
+    borderRadius: Radius.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 4,
+    gap: 10,
+    marginTop: 6,
   },
   dailyButtonText: {
     ...Typography.labelLg,
-    color: Colors.primary,
+    color: Colors.onPrimaryAccent,
+    fontWeight: '700',
   },
   metricGrid: {
     flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    borderRadius: Radius.lg,
-    backgroundColor: Colors.surface,
+    gap: 12,
   },
   metricCol: {
     flex: 1,
     paddingVertical: 14,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRightWidth: 1,
-    borderRightColor: Colors.outline,
   },
   metricLabel: {
-    ...Typography.labelMd,
+    ...Typography.labelSm,
     color: Colors.muted,
+    fontWeight: '600',
   },
   metricValue: {
     ...Typography.headlineSm,
     color: Colors.onSurface,
-    marginVertical: 2,
+    fontWeight: '800',
+    marginVertical: 3,
   },
   metricSub: {
     ...Typography.labelSm,
@@ -444,36 +449,33 @@ const styles = StyleSheet.create({
   },
   viewAllText: {
     ...Typography.labelMd,
-    color: Colors.primary,
-    fontWeight: '600',
+    color: Colors.primaryAccent,
+    fontWeight: '700',
   },
   topicGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 12,
   },
   topicCard: {
     width: '48%',
-    padding: 14,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surface,
-    gap: 4,
+    flexGrow: 1,
+    gap: 8,
+    padding: 16,
   },
   topicIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: Radius.sm,
-    borderWidth: 1,
-    borderColor: Colors.outline,
+    width: 40,
+    height: 40,
+    borderRadius: Radius.md,
+    ...NeuShadows.sunken,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
   },
   topicTitle: {
-    ...Typography.labelLg,
+    ...Typography.headlineSm,
+    fontSize: 16,
     color: Colors.onSurface,
+    fontWeight: '700',
   },
   topicSubtitle: {
     ...Typography.bodySm,
@@ -482,16 +484,13 @@ const styles = StyleSheet.create({
   },
   quickHubRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
+    marginTop: 4,
   },
   hubCard: {
     flex: 1,
-    padding: 14,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    backgroundColor: Colors.surfaceSubtle,
-    gap: 4,
+    gap: 6,
+    padding: 16,
   },
   hubHeader: {
     flexDirection: 'row',
@@ -499,13 +498,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
+  hubIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: Radius.sm,
+    ...NeuShadows.sunken,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   hubTitle: {
     ...Typography.labelLg,
     color: Colors.onSurface,
+    fontWeight: '700',
   },
   hubSubtitle: {
     ...Typography.bodySm,
     color: Colors.muted,
-    fontSize: 11,
+    fontSize: 12,
   },
 });

@@ -1,8 +1,26 @@
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { AIResponsePayload, SessionSummaryPayload, CEFRLevel } from '../types';
 
-// Default backend endpoint (supports localhost on Web, 10.0.2.2 on Android emulator, or LAN IP)
-const getBaseUrl = () => {
+// Automatically detect host computer IP when running via Expo on physical device/emulator
+const getAutoDetectedHost = (): string => {
+  try {
+    // Expo hostUri is e.g. "10.239.88.183:8081" or "192.168.1.5:8081"
+    const hostUri =
+      Constants.expoConfig?.hostUri ||
+      (Constants as any).manifest?.debuggerHost ||
+      (Constants as any).manifest2?.extra?.expoClient?.hostUri;
+
+    if (hostUri) {
+      const ip = hostUri.split(':')[0];
+      if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
+        return `http://${ip}:8000`;
+      }
+    }
+  } catch (e) {
+    // Fall back below
+  }
+
   if (Platform.OS === 'android') {
     return 'http://10.0.2.2:8000';
   }
@@ -12,12 +30,22 @@ const getBaseUrl = () => {
 let customBackendUrl: string | null = null;
 
 export const setCustomBackendUrl = (url: string) => {
-  customBackendUrl = url;
+  customBackendUrl = url && url.trim() ? url.trim() : null;
 };
 
 export const ApiService = {
   getUrl(): string {
-    return customBackendUrl || getBaseUrl();
+    // If a custom URL was explicitly saved and is not plain localhost on native device, use it
+    if (customBackendUrl) {
+      if (
+        Platform.OS !== 'web' &&
+        (customBackendUrl.includes('localhost') || customBackendUrl.includes('127.0.0.1'))
+      ) {
+        return getAutoDetectedHost();
+      }
+      return customBackendUrl;
+    }
+    return getAutoDetectedHost();
   },
 
   async checkHealth(): Promise<{ status: string; ai_ready: boolean }> {
@@ -39,7 +67,10 @@ export const ApiService = {
     history: { role: string; text: string }[] = []
   ): Promise<AIResponsePayload> {
     try {
-      const response = await fetch(`${this.getUrl()}/api/conversation/message`, {
+      const targetUrl = `${this.getUrl()}/api/conversation/message`;
+      console.log(`[API] Sending message to: ${targetUrl}`);
+
+      const response = await fetch(targetUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +110,10 @@ export const ApiService = {
     correctionsCount: number
   ): Promise<SessionSummaryPayload> {
     try {
-      const response = await fetch(`${this.getUrl()}/api/conversation/session`, {
+      const targetUrl = `${this.getUrl()}/api/conversation/session`;
+      console.log(`[API] Requesting summary from: ${targetUrl}`);
+
+      const response = await fetch(targetUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,10 +145,13 @@ export const ApiService = {
         vocabulary_score: 82,
         fluency_score: 85,
         overall_score: Math.round((82 + 85 + Math.max(65, 95 - correctionsCount * 5)) / 3),
-        top_improvement: correctionsCount > 0 ? "Review the past tense and preposition suggestions." : "Continue practicing diverse vocabulary.",
-        new_words: ["opportunity", "perspective", "confident", "flexibility"],
-        encouragement: "Fantastic session! You spoke naturally and kept a steady conversation flow.",
+        top_improvement:
+          correctionsCount > 0
+            ? 'Review the past tense and preposition suggestions.'
+            : 'Continue practicing diverse vocabulary.',
+        new_words: ['opportunity', 'perspective', 'confident', 'flexibility'],
+        encouragement: 'Fantastic session! You spoke naturally and kept a steady conversation flow.',
       };
     }
-  }
+  },
 };

@@ -1,59 +1,159 @@
 /**
- * Editorial Monolith Design System Tokens
- * Strictly adheres to prototype/DESIGN.md
+ * Neumorphism (Soft UI) Design System Tokens
+ * Tactile, soft-extruded lighting with sleek Dark Black Accents
  */
 
 export const Colors = {
-  // Pure monochrome palette
+  // Neumorphic Base Canvas & Surfaces
+  background: '#E8ECF5',
+  surface: '#E8ECF5',
+  surfaceSubtle: '#EFF3FA',
+  surfaceCard: '#E8ECF5',
+  surfaceSunken: '#DCE2EC',
+  surfaceDeepSunken: '#D0D8E5',
+  surfaceContainerLow: '#EFF3FA',
+  surfaceContainer: '#E8ECF5',
+  surfaceContainerHigh: '#DEE4EF',
+  surfaceDim: '#CBD5E1',
+
+  // Shadow and Highlight Tones for Soft 3D Lighting
+  neuLight: '#FFFFFF',
+  neuDark: '#B2BECF',
+  neuDarkDeep: '#98A6BB',
+  neuHighlight: 'rgba(255, 255, 255, 0.95)',
+  neuShadow: 'rgba(163, 177, 198, 0.65)',
+  neuShadowDark: 'rgba(140, 155, 178, 0.75)',
+  neuSunkenBorder: '#CBD5E1',
+
+  // Primary & Accent Tones (Deep Dark Black)
   primary: '#111111',
   primaryActive: '#000000',
-  onPrimary: '#ffffff',
-  
-  // Surfaces & Backgrounds
-  background: '#ffffff',
-  surface: '#ffffff',
-  surfaceSubtle: '#f4f4f5',
-  surfaceCard: '#fafafa',
-  surfaceContainerLow: '#f3f3f4',
-  surfaceContainer: '#eeeeee',
-  surfaceContainerHigh: '#e8e8e8',
-  surfaceDim: '#dadada',
-  
+  primaryAccent: '#111111',
+  primaryAccentGradient: '#1F242D',
+  onPrimary: '#FFFFFF',
+  onPrimaryAccent: '#FFFFFF',
+
   // Text & Typography
   onSurface: '#111111',
-  onSurfaceVariant: '#444748',
-  secondary: '#71717a',
-  muted: '#71717a',
-  mutedLight: '#a1a1aa',
-  
-  // Outlines & Dividers
-  outline: '#e4e4e7',
-  outlineVariant: '#d4d4d8',
-  border: '#e4e4e7',
-  
+  onSurfaceVariant: '#334155',
+  secondary: '#64748B',
+  muted: '#7A8B9E',
+  mutedLight: '#94A3B8',
+
+  // Outlines & Subtle Lighting Borders
+  outline: 'rgba(255, 255, 255, 0.7)',
+  outlineDark: 'rgba(163, 177, 198, 0.35)',
+  border: 'rgba(255, 255, 255, 0.6)',
+
   // Semantic Accents
-  error: '#ba1a1a',
-  errorContainer: '#ffdad6',
-  onErrorContainer: '#93000a',
-  
-  success: '#166534',
-  successContainer: '#dcfce7',
-  
-  warning: '#854d0e',
-  warningContainer: '#fef9c3',
-  
-  // Dark mode variants (for dark theme support)
+  error: '#DC2626',
+  errorContainer: '#FEE2E2',
+  onErrorContainer: '#991B1B',
+  errorNeuShadow: 'rgba(239, 68, 68, 0.3)',
+
+  success: '#16A34A',
+  successContainer: '#DCFCE7',
+  onSuccessContainer: '#15803D',
+  successNeuShadow: 'rgba(34, 197, 94, 0.3)',
+
+  warning: '#D97706',
+  warningContainer: '#FEF3C7',
+  onWarningContainer: '#92400E',
+
+  // Dark mode variants
   dark: {
-    background: '#121212',
-    surface: '#18181b',
-    surfaceSubtle: '#27272a',
-    surfaceCard: '#1f1f23',
-    onSurface: '#f4f4f5',
-    secondary: '#a1a1aa',
-    outline: '#3f3f46',
-    primary: '#ffffff',
+    background: '#121418',
+    surface: '#181A20',
+    surfaceSubtle: '#22252D',
+    surfaceCard: '#181A20',
+    surfaceSunken: '#0F1014',
+    neuLight: '#2B2F3A',
+    neuDark: '#0B0C0E',
+    onSurface: '#F8FAFC',
+    secondary: '#94A3B8',
+    outline: '#2D323E',
+    primary: '#FFFFFF',
     onPrimary: '#111111',
-  }
+  },
+};
+
+export const NeuShadows = {
+  // Extruded Raised Surface (Convex)
+  raised: {
+    backgroundColor: Colors.surface,
+    shadowColor: Colors.neuDark,
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.65,
+    shadowRadius: 10,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+  },
+
+  // Subtle Raised (for small buttons, tags, chips)
+  raisedSm: {
+    backgroundColor: Colors.surface,
+    shadowColor: Colors.neuDark,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.55,
+    shadowRadius: 6,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
+  },
+
+  // Grand Raised (Hero cards, interactive floating docks)
+  raisedLg: {
+    backgroundColor: Colors.surface,
+    shadowColor: Colors.neuDarkDeep,
+    shadowOffset: { width: 8, height: 8 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
+  },
+
+  // Sunken Groove / Debossed (Concave) for inputs, tracks, pressed elements
+  sunken: {
+    backgroundColor: Colors.surfaceSunken,
+    borderWidth: 1.5,
+    borderColor: Colors.neuSunkenBorder,
+    shadowColor: Colors.neuDarkDeep,
+    shadowOffset: { width: -2, height: -2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+    elevation: 0,
+  },
+
+  // Inset Deep Sunken
+  sunkenDeep: {
+    backgroundColor: Colors.surfaceDeepSunken,
+    borderWidth: 1,
+    borderColor: Colors.neuSunkenBorder,
+  },
+
+  // Sleek Dark Black Accent Raised
+  accentRaised: {
+    backgroundColor: Colors.primaryAccent,
+    shadowColor: Colors.neuDarkDeep,
+    shadowOffset: { width: 4, height: 6 },
+    shadowOpacity: 0.55,
+    shadowRadius: 10,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
+
+  // Pressed / Flat Active State
+  pressed: {
+    backgroundColor: Colors.surfaceContainerHigh,
+    shadowColor: 'transparent',
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: 1,
+    borderColor: Colors.neuDark,
+  },
 };
 
 export const Spacing = {
@@ -68,31 +168,33 @@ export const Spacing = {
 };
 
 export const Radius = {
-  sm: 4,
-  md: 8,
-  lg: 12,
-  xl: 16,
+  xs: 6,
+  sm: 10,
+  md: 14,
+  lg: 20,
+  xl: 26,
+  xxl: 32,
   full: 9999,
 };
 
 export const Typography = {
-  fontFamily: 'System', // Hanken Grotesk on supported platforms / fallback system font
+  fontFamily: 'System',
   displayLg: {
     fontSize: 34,
     lineHeight: 40,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
     letterSpacing: -0.8,
   },
   headlineLg: {
     fontSize: 28,
     lineHeight: 34,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
     letterSpacing: -0.5,
   },
   headlineMd: {
     fontSize: 22,
     lineHeight: 28,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
     letterSpacing: -0.3,
   },
   headlineSm: {
@@ -125,13 +227,13 @@ export const Typography = {
   labelMd: {
     fontSize: 12,
     lineHeight: 16,
-    fontWeight: '500' as const,
+    fontWeight: '600' as const,
     letterSpacing: 0.3,
   },
   labelSm: {
     fontSize: 10,
     lineHeight: 14,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
     letterSpacing: 0.6,
   },
 };
