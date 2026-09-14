@@ -113,7 +113,7 @@ export default function ProfileScreen() {
             <Text style={styles.cardSectionTitle}>TARGET CEFR LEVEL</Text>
           </View>
           <Text style={styles.hintText}>
-            Echo adapts conversation speed and correction strictness according to your level.
+            TalkTune adapts conversation speed and correction strictness according to your level.
           </Text>
 
           <View style={styles.levelSelector}>
@@ -149,7 +149,7 @@ export default function ProfileScreen() {
             <Volume2 size={18} color={Colors.primaryAccent} />
             <Text style={styles.cardSectionTitle}>SPEECH PLAYBACK SPEED</Text>
           </View>
-          <Text style={styles.hintText}>Control how fast Echo reads responses aloud.</Text>
+          <Text style={styles.hintText}>Control how fast TalkTune reads responses aloud.</Text>
 
           <View style={styles.rateSelector}>
             {SPEECH_RATES.map((rate) => {

@@ -132,7 +132,7 @@ export default function PracticeSessionScreen() {
       case 'PROCESSING':
         return 'Analyzing pronunciation & grammar...';
       case 'AI_SPEAKING':
-        return 'Echo is speaking...';
+        return 'TalkTune is speaking...';
       case 'ERROR':
         return errorMessage || 'Error occurred';
       default:
@@ -162,7 +162,7 @@ export default function PracticeSessionScreen() {
             <Text style={styles.topicTitle} numberOfLines={1}>
               {currentSession?.topic || 'Daily Conversation'}
             </Text>
-            <Text style={styles.topicSub}>Echo AI Coach</Text>
+            <Text style={styles.topicSub}>TalkTune AI Coach</Text>
           </View>
         </View>
 
@@ -203,7 +203,7 @@ export default function PracticeSessionScreen() {
         {practiceState === 'PROCESSING' && (
           <View style={styles.processingBubble}>
             <ActivityIndicator size="small" color={Colors.primaryAccent} />
-            <Text style={styles.processingText}>Echo is analyzing...</Text>
+            <Text style={styles.processingText}>TalkTune is analyzing...</Text>
           </View>
         )}
       </ScrollView>

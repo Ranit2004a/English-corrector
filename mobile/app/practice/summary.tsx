@@ -109,7 +109,7 @@ export default function SessionSummaryScreen() {
         {/* Encouraging Note */}
         <NeuCard variant="raisedSm" style={styles.encouragementCard}>
           <Text style={styles.encouragementText}>"{summary.encouragement}"</Text>
-          <Text style={styles.coachSignature}>— Echo Speaking Coach</Text>
+          <Text style={styles.coachSignature}>— TalkTune Speaking Coach</Text>
         </NeuCard>
 
         {/* Action Button */}

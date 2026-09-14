@@ -6,13 +6,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initDatabase } from '../db/database';
 import { useUserStore } from '../store/useUserStore';
 import { useSettingsStore } from '../store/useSettingsStore';
-import { View, ActivityIndicator } from 'react-native';
 import { Colors } from '../constants/theme';
+import { SplashScreen } from '../components/ui/SplashScreen';
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
+  const [splashFinished, setSplashFinished] = useState(false);
   const loadUser = useUserStore(state => state.loadUser);
   const loadSettings = useSettingsStore(state => state.loadSettings);
 
@@ -30,14 +31,6 @@ export default function RootLayout() {
     }
     setup();
   }, []);
-
-  if (!dbReady) {
-    return (
-      <View style={{ flex: 1, backgroundColor: Colors.background, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
-    );
-  }
 
   return (
     <SafeAreaProvider>
@@ -57,6 +50,13 @@ export default function RootLayout() {
           <Stack.Screen name="vocabulary/index" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
         </Stack>
+
+        {(!splashFinished || !dbReady) && (
+          <SplashScreen
+            isReady={dbReady}
+            onFinish={() => setSplashFinished(true)}
+          />
+        )}
       </QueryClientProvider>
     </SafeAreaProvider>
   );
