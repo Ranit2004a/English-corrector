@@ -5,16 +5,34 @@ import { AIResponsePayload, SessionSummaryPayload, CEFRLevel } from '../types';
 // Automatically detect host computer IP when running via Expo on physical device/emulator
 const getAutoDetectedHost = (): string => {
   try {
-    // Expo hostUri is e.g. "10.239.88.183:8081" or "192.168.1.5:8081"
-    const hostUri =
+    // Expo hostUri is e.g. "10.239.88.183:8081", "192.168.1.5:8081", or "[fd00::10]:8081"
+    const hostUri: string | undefined =
       Constants.expoConfig?.hostUri ||
       (Constants as any).manifest?.debuggerHost ||
       (Constants as any).manifest2?.extra?.expoClient?.hostUri;
 
     if (hostUri) {
-      const ip = hostUri.split(':')[0];
-      if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
-        return `http://${ip}:8000`;
+      let host = '';
+
+      if (hostUri.startsWith('[')) {
+        // Bracketed IPv6 address: e.g., "[fd00::10]:8081" or "[::1]:8081"
+        const closingBracketIndex = hostUri.indexOf(']');
+        if (closingBracketIndex !== -1) {
+          host = hostUri.substring(0, closingBracketIndex + 1);
+        }
+      } else {
+        // Standard IPv4 or hostname: e.g., "192.168.1.5:8081"
+        host = hostUri.split(':')[0];
+      }
+
+      const isLoopback =
+        host === 'localhost' ||
+        host === '127.0.0.1' ||
+        host === '::1' ||
+        host === '[::1]';
+
+      if (host && !isLoopback) {
+        return `http://${host}:8000`;
       }
     }
   } catch (e) {
@@ -39,7 +57,9 @@ export const ApiService = {
     if (customBackendUrl) {
       if (
         Platform.OS !== 'web' &&
-        (customBackendUrl.includes('localhost') || customBackendUrl.includes('127.0.0.1'))
+        (customBackendUrl.includes('localhost') ||
+          customBackendUrl.includes('127.0.0.1') ||
+          customBackendUrl.includes('[::1]'))
       ) {
         return getAutoDetectedHost();
       }

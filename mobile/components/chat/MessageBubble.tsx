@@ -32,7 +32,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
     <View style={[styles.container, isAI ? styles.containerAI : styles.containerUser]}>
       {/* Header Info */}
       <View style={[styles.header, isAI ? styles.headerAI : styles.headerUser]}>
-        <Text style={styles.senderName}>{isAI ? 'Echo AI' : 'You'}</Text>
+        <Text style={styles.senderName}>{isAI ? 'TalkTune AI' : 'You'}</Text>
         <Text style={styles.dot}>•</Text>
         <Text style={styles.timestamp}>{formatTime(message.created_at)}</Text>
       </View>

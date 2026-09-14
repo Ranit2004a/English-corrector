@@ -17,7 +17,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     speech_rate: 1.0,
     voice_auto_play: true,
     haptic_feedback: true,
-    backend_url: 'http://10.218.116.212:8000',
+    backend_url: '',
     dark_mode: false,
   },
   isLoading: true,
@@ -25,10 +25,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   loadSettings: async () => {
     try {
       const settings = await SettingsRepository.getSettings();
-      const effectiveUrl =
-        settings.backend_url && settings.backend_url !== 'http://localhost:8000'
-          ? settings.backend_url
-          : 'http://10.218.116.212:8000';
+      const effectiveUrl = settings.backend_url ? settings.backend_url.trim() : '';
       setCustomBackendUrl(effectiveUrl);
       set({ settings: { ...settings, backend_url: effectiveUrl }, isLoading: false });
     } catch (e) {

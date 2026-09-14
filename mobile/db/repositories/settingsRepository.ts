@@ -5,7 +5,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   speech_rate: 1.0,
   voice_auto_play: true,
   haptic_feedback: true,
-  backend_url: 'http://localhost:8000',
+  backend_url: '',
   dark_mode: false,
 };
 

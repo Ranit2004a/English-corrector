@@ -94,6 +94,6 @@ export const PRACTICE_TOPICS: Topic[] = [
     subtitle: 'Talk about anything on your mind with no agenda',
     category: 'Free Conversation',
     icon: 'record_voice_over',
-    starter_prompt: "Hello! I'm Echo. What is on your mind today? Feel free to speak about whatever you like."
+    starter_prompt: "Hello! I'm TalkTune. What is on your mind today? Feel free to speak about whatever you like."
   }
 ];

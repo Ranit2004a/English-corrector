@@ -67,7 +67,7 @@ export default function OnboardingScreen() {
             <View style={styles.iconCircle}>
               <Sparkles size={28} color={Colors.primaryAccent} />
             </View>
-            <Text style={styles.stepTitle}>Welcome to Echo</Text>
+            <Text style={styles.stepTitle}>Welcome to TalkTune</Text>
             <Text style={styles.stepSubtitle}>
               Your tactile, private, AI English speaking coach.
             </Text>
@@ -92,7 +92,7 @@ export default function OnboardingScreen() {
           <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
             <Text style={styles.stepTitle}>Choose your level</Text>
             <Text style={styles.stepSubtitle}>
-              Echo adapts vocabulary and conversation pacing to your target fluency.
+              TalkTune adapts vocabulary and conversation pacing to your target fluency.
             </Text>
 
             <View style={styles.optionsList}>

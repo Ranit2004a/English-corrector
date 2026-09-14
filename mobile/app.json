@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Echo English Coach",
-    "slug": "english-corrector",
+    "name": "TalkTune",
+    "slug": "talktune",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,8 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.englishcorrector.app",
       "infoPlist": {
-        "NSSpeechRecognitionUsageDescription": "Echo uses speech recognition to understand your spoken English during conversation practice.",
-        "NSMicrophoneUsageDescription": "Echo requires microphone access so you can speak with your AI English coach."
+        "NSSpeechRecognitionUsageDescription": "TalkTune uses speech recognition to understand your spoken English during conversation practice.",
+        "NSMicrophoneUsageDescription": "TalkTune requires microphone access so you can speak with your AI English coach."
       }
     },
     "android": {
