@@ -3,7 +3,8 @@ import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Colors, NeuShadows, Radius } from '../../constants/theme';
 
 interface ProgressBarProps {
-  progress: number; // 0 to 1 or 0 to 100
+  progress: number;
+  max?: number; // Maximum value (defaults to 100)
   height?: number;
   color?: string;
   backgroundColor?: string;
@@ -12,12 +13,13 @@ interface ProgressBarProps {
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   progress,
+  max = 100,
   height = 8,
   color = Colors.primaryAccent,
   backgroundColor = Colors.surfaceSunken,
   style,
 }) => {
-  const normalized = Math.min(100, Math.max(0, progress > 1 ? progress : progress * 100));
+  const normalized = max > 0 ? Math.min(100, Math.max(0, (progress / max) * 100)) : 0;
 
   return (
     <View style={[styles.track, { height, backgroundColor }, style]}>

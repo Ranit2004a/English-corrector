@@ -59,24 +59,24 @@ export default function SessionSummaryScreen() {
               <Text style={styles.scoreLabel}>Grammar Accuracy</Text>
               <Text style={styles.scoreValue}>{summary.grammar_score}%</Text>
             </View>
-            <ProgressBar progress={summary.grammar_score} height={8} color={Colors.primaryAccent} />
+            <ProgressBar progress={summary.grammar_score} max={100} height={8} color={Colors.primaryAccent} />
           </View>
 
-            {/* Vocabulary Diversity */}
-            <View style={styles.scoreRow}>
-              <View style={styles.scoreMeta}>
-                <Text style={styles.scoreLabel}>Vocabulary Diversity</Text>
-                <Text style={styles.scoreValue}>{summary.vocabulary_score}%</Text>
-              </View>
-              <ProgressBar progress={summary.vocabulary_score} height={8} color={Colors.primaryAccent} />
+          {/* Vocabulary Diversity */}
+          <View style={styles.scoreRow}>
+            <View style={styles.scoreMeta}>
+              <Text style={styles.scoreLabel}>Vocabulary Diversity</Text>
+              <Text style={styles.scoreValue}>{summary.vocabulary_score}%</Text>
             </View>
+            <ProgressBar progress={summary.vocabulary_score} max={100} height={8} color={Colors.primaryAccent} />
+          </View>
 
           <View style={styles.scoreRow}>
             <View style={styles.scoreMeta}>
               <Text style={styles.scoreLabel}>Fluency & Flow</Text>
               <Text style={styles.scoreValue}>{summary.fluency_score}%</Text>
             </View>
-            <ProgressBar progress={summary.fluency_score} height={8} color={Colors.success} />
+            <ProgressBar progress={summary.fluency_score} max={100} height={8} color={Colors.success} />
           </View>
         </NeuCard>
 

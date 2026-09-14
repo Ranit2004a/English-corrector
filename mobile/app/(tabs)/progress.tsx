@@ -4,11 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, NeuShadows, Radius, Spacing, Typography } from '../../constants/theme';
 import { useUserStore } from '../../store/useUserStore';
 import { ProgressRepository } from '../../db/repositories/progressRepository';
-import { CorrectionRepository } from '../../db/repositories/correctionRepository';
 import { DailyProgress } from '../../types';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { NeuCard } from '../../components/ui/NeuCard';
-import { Flame, Clock, Award, CheckCircle2, TrendingUp } from 'lucide-react-native';
+import { Flame, Clock, Award, TrendingUp } from 'lucide-react-native';
 
 const TIMEFRAMES = ['7 Days', '30 Days', 'All Time'] as const;
 
@@ -16,34 +15,92 @@ export default function ProgressScreen() {
   const { streak, todayMinutes } = useUserStore();
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('7 Days');
   const [progressData, setProgressData] = useState<DailyProgress[]>([]);
-  const [categoryCounts, setCategoryCounts] = useState({
-    grammar: 0,
-    vocabulary: 0,
-    pronunciation: 0,
-    naturalness: 0,
-  });
 
   useEffect(() => {
     async function loadData() {
-      const days = selectedTimeframe === '7 Days' ? 7 : selectedTimeframe === '30 Days' ? 30 : 90;
+      const days = selectedTimeframe === '7 Days' ? 7 : selectedTimeframe === '30 Days' ? 30 : 365;
       const history = await ProgressRepository.getRecentProgress(days);
       setProgressData(history);
-
-      const cats = await CorrectionRepository.getCategoryCounts();
-      setCategoryCounts(cats);
     }
     loadData();
   }, [selectedTimeframe]);
 
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const chartValues = [10, 15, 8, 20, 14, 18, Math.max(12, todayMinutes)];
-  const maxVal = Math.max(...chartValues, 25);
+  /**
+   * Timeframe Aggregated Mastery Scores:
+   * Aggregates stored DailyProgress records (grammar_score, vocabulary_score, pronunciation_score, fluency_score).
+   * Note: "Natural Idiomatic Flow" maps directly to fluency_score (reflecting natural speech flow and conversational fluency).
+   */
+  const aggregatedScores = React.useMemo(() => {
+    if (!progressData || progressData.length === 0) {
+      return {
+        grammar: 80,
+        vocabulary: 80,
+        pronunciation: 80,
+        fluency: 80,
+      };
+    }
 
-  const totalMistakes =
-    categoryCounts.grammar +
-    categoryCounts.vocabulary +
-    categoryCounts.pronunciation +
-    categoryCounts.naturalness;
+    const activeRecords = progressData.filter((d) => d.sessions_completed > 0 || d.speaking_minutes > 0);
+    const targetSet = activeRecords.length > 0 ? activeRecords : progressData;
+
+    const sum = targetSet.reduce(
+      (acc, item) => ({
+        grammar: acc.grammar + (item.grammar_score ?? 80),
+        vocabulary: acc.vocabulary + (item.vocabulary_score ?? 80),
+        pronunciation: acc.pronunciation + (item.pronunciation_score ?? 80),
+        fluency: acc.fluency + (item.fluency_score ?? 80),
+      }),
+      { grammar: 0, vocabulary: 0, pronunciation: 0, fluency: 0 }
+    );
+
+    const count = targetSet.length || 1;
+
+    return {
+      grammar: Math.round(sum.grammar / count),
+      vocabulary: Math.round(sum.vocabulary / count),
+      pronunciation: Math.round(sum.pronunciation / count),
+      fluency: Math.round(sum.fluency / count),
+    };
+  }, [progressData]);
+
+  // Timeframe aggregated speaking minutes
+  const totalSpeakingMinutes = React.useMemo(() => {
+    if (!progressData || progressData.length === 0) return todayMinutes;
+    const sum = progressData.reduce((acc, curr) => acc + (curr.speaking_minutes || 0), 0);
+    return Math.max(sum, todayMinutes);
+  }, [progressData, todayMinutes]);
+
+  // Timeframe aggregated mistake notes count
+  const totalMistakes = React.useMemo(() => {
+    if (!progressData || progressData.length === 0) return 0;
+    return progressData.reduce((acc, curr) => acc + (curr.mistakes_count || 0), 0);
+  }, [progressData]);
+
+  // Dynamic 7-day practice chart data mapped from DailyProgress history
+  const chartData = React.useMemo(() => {
+    const days: { day: string; minutes: number; isToday: boolean }[] = [];
+    const now = new Date();
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const record = progressData.find((p) => p.date === dateStr);
+      let minutes = record ? record.speaking_minutes : 0;
+      if (i === 0) {
+        minutes = Math.max(minutes, todayMinutes);
+      }
+      days.push({
+        day: dayName,
+        minutes,
+        isToday: i === 0,
+      });
+    }
+    return days;
+  }, [progressData, todayMinutes]);
+
+  const maxVal = Math.max(...chartData.map((d) => d.minutes), 25);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -95,7 +152,7 @@ export default function ProgressScreen() {
             <View style={styles.statIcon}>
               <Clock size={20} color={Colors.primaryAccent} />
             </View>
-            <Text style={styles.statNumber}>{todayMinutes + 97}m</Text>
+            <Text style={styles.statNumber}>{totalSpeakingMinutes}m</Text>
             <Text style={styles.statLabel}>Time Spoken</Text>
           </NeuCard>
 
@@ -103,7 +160,7 @@ export default function ProgressScreen() {
             <View style={styles.statIcon}>
               <Award size={20} color={Colors.success} />
             </View>
-            <Text style={styles.statNumber}>86%</Text>
+            <Text style={styles.statNumber}>{aggregatedScores.fluency}%</Text>
             <Text style={styles.statLabel}>Fluency Score</Text>
           </NeuCard>
         </View>
@@ -120,24 +177,22 @@ export default function ProgressScreen() {
 
           {/* Bar chart with sunken slots and extruded bars */}
           <View style={styles.chartContainer}>
-            {daysOfWeek.map((day, idx) => {
-              const val = chartValues[idx] || 0;
-              const heightPct = Math.round((val / maxVal) * 100);
-              const isToday = idx === daysOfWeek.length - 1;
+            {chartData.map((item) => {
+              const heightPct = Math.round((item.minutes / maxVal) * 100);
 
               return (
-                <View key={day} style={styles.chartCol}>
-                  <Text style={styles.barValText}>{val > 0 ? `${val}m` : ''}</Text>
+                <View key={item.day} style={styles.chartCol}>
+                  <Text style={styles.barValText}>{item.minutes > 0 ? `${item.minutes}m` : ''}</Text>
                   <View style={styles.barSlot}>
                     <View
                       style={[
                         styles.barFill,
                         { height: `${heightPct}%` },
-                        isToday && styles.barFillToday,
+                        item.isToday && styles.barFillToday,
                       ]}
                     />
                   </View>
-                  <Text style={[styles.dayLabel, isToday && styles.dayLabelToday]}>{day}</Text>
+                  <Text style={[styles.dayLabel, item.isToday && styles.dayLabelToday]}>{item.day}</Text>
                 </View>
               );
             })}
@@ -156,36 +211,36 @@ export default function ProgressScreen() {
             <View style={styles.breakdownItem}>
               <View style={styles.breakdownRow}>
                 <Text style={styles.breakdownName}>Grammar Accuracy</Text>
-                <Text style={styles.breakdownCount}>84%</Text>
+                <Text style={styles.breakdownCount}>{aggregatedScores.grammar}%</Text>
               </View>
-              <ProgressBar progress={84} height={8} color={Colors.primaryAccent} />
+              <ProgressBar progress={aggregatedScores.grammar} max={100} height={8} color={Colors.primaryAccent} />
             </View>
 
             {/* Vocabulary */}
             <View style={styles.breakdownItem}>
               <View style={styles.breakdownRow}>
                 <Text style={styles.breakdownName}>Vocabulary Range</Text>
-                <Text style={styles.breakdownCount}>78%</Text>
+                <Text style={styles.breakdownCount}>{aggregatedScores.vocabulary}%</Text>
               </View>
-              <ProgressBar progress={78} height={8} color={Colors.primaryAccent} />
+              <ProgressBar progress={aggregatedScores.vocabulary} max={100} height={8} color={Colors.primaryAccent} />
             </View>
 
             {/* Pronunciation */}
             <View style={styles.breakdownItem}>
               <View style={styles.breakdownRow}>
                 <Text style={styles.breakdownName}>Pronunciation & Clarity</Text>
-                <Text style={styles.breakdownCount}>90%</Text>
+                <Text style={styles.breakdownCount}>{aggregatedScores.pronunciation}%</Text>
               </View>
-              <ProgressBar progress={90} height={8} color={Colors.primaryAccent} />
+              <ProgressBar progress={aggregatedScores.pronunciation} max={100} height={8} color={Colors.primaryAccent} />
             </View>
 
-            {/* Naturalness */}
+            {/* Naturalness / Fluency: Mapped directly to fluency_score */}
             <View style={styles.breakdownItem}>
               <View style={styles.breakdownRow}>
                 <Text style={styles.breakdownName}>Natural Idiomatic Flow</Text>
-                <Text style={styles.breakdownCount}>74%</Text>
+                <Text style={styles.breakdownCount}>{aggregatedScores.fluency}%</Text>
               </View>
-              <ProgressBar progress={74} height={8} color={Colors.primaryAccent} />
+              <ProgressBar progress={aggregatedScores.fluency} max={100} height={8} color={Colors.primaryAccent} />
             </View>
           </View>
         </NeuCard>

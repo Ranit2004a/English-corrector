@@ -147,6 +147,7 @@ export default function PracticeSessionScreen() {
         <View style={styles.headerLeft}>
           <NeuIconButton
             icon={<ArrowLeft size={18} color={Colors.onSurface} />}
+            accessibilityLabel="Go back"
             size={40}
             onPress={() => {
               if (messages.length > 1) {

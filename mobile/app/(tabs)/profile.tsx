@@ -41,11 +41,7 @@ export default function ProfileScreen() {
   const { user, setLevel, saveUser } = useUserStore();
   const { settings, updateSetting, clearAllData, exportData } = useSettingsStore();
 
-  const [backendUrl, setBackendUrl] = useState(
-    settings.backend_url && settings.backend_url !== 'http://localhost:8000'
-      ? settings.backend_url
-      : 'http://10.218.116.212:8000'
-  );
+  const [backendUrl, setBackendUrl] = useState(settings.backend_url || '');
   const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
   const [isTestingApi, setIsTestingApi] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
@@ -53,11 +49,7 @@ export default function ProfileScreen() {
   const [exportedJson, setExportedJson] = useState('');
 
   useEffect(() => {
-    if (settings.backend_url && settings.backend_url !== 'http://localhost:8000') {
-      setBackendUrl(settings.backend_url);
-    } else {
-      setBackendUrl('http://10.218.116.212:8000');
-    }
+    setBackendUrl(settings.backend_url || '');
   }, [settings.backend_url]);
 
   const handleTestConnection = async () => {

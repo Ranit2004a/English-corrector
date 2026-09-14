@@ -70,6 +70,7 @@ export default function MistakesScreen() {
       <View style={styles.header}>
         <NeuIconButton
           icon={<ArrowLeft size={18} color={Colors.onSurface} />}
+          accessibilityLabel="Go back"
           size={40}
           onPress={() => router.back()}
         />

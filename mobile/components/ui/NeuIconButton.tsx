@@ -4,6 +4,7 @@ import { Colors, NeuShadows, Radius } from '../../constants/theme';
 
 interface NeuIconButtonProps {
   icon: React.ReactNode;
+  accessibilityLabel: string;
   onPress?: (event: GestureResponderEvent) => void;
   size?: number;
   rounded?: 'circle' | 'square';
@@ -14,6 +15,7 @@ interface NeuIconButtonProps {
 
 export const NeuIconButton: React.FC<NeuIconButtonProps> = ({
   icon,
+  accessibilityLabel,
   onPress,
   size = 44,
   rounded = 'circle',
@@ -46,6 +48,9 @@ export const NeuIconButton: React.FC<NeuIconButtonProps> = ({
 
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled }}
       activeOpacity={0.8}
       onPress={onPress}
       onPressIn={() => setIsPressed(true)}

@@ -38,24 +38,20 @@ export const Button: React.FC<ButtonProps> = ({
   const [isPressed, setIsPressed] = useState(false);
 
   const getContainerStyle = () => {
-    if (isPressed) {
-      return styles.pressed;
-    }
-
     switch (variant) {
       case 'accent':
-        return [styles.accent, NeuShadows.accentRaised];
+        return [NeuShadows.accentRaised, styles.accent];
       case 'secondary':
-        return [styles.secondary, NeuShadows.raisedSm];
+        return [NeuShadows.raisedSm, styles.secondary];
       case 'outline':
-        return [styles.outline, NeuShadows.raisedSm];
+        return [NeuShadows.raisedSm, styles.outline];
       case 'danger':
-        return [styles.danger, NeuShadows.raisedSm];
+        return [NeuShadows.raisedSm, styles.danger];
       case 'sunken':
-        return [styles.sunken, NeuShadows.sunken];
+        return [NeuShadows.sunken, styles.sunken];
       default:
         // Primary is a sleek elevated slate/charcoal with subtle top highlight
-        return [styles.primary, NeuShadows.raised];
+        return [NeuShadows.raised, styles.primary];
     }
   };
 
@@ -88,6 +84,9 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const getSpinnerColor = () => {
+    if (variant === 'danger') {
+      return Colors.onErrorContainer;
+    }
     if (variant === 'secondary' || variant === 'outline' || variant === 'sunken') {
       return Colors.onSurface;
     }
@@ -105,6 +104,7 @@ export const Button: React.FC<ButtonProps> = ({
         styles.base,
         getSizeStyle(),
         getContainerStyle(),
+        isPressed && styles.pressed,
         disabled && styles.disabled,
         style,
       ]}
@@ -178,10 +178,9 @@ const styles = StyleSheet.create({
     borderColor: Colors.neuSunkenBorder,
   },
   pressed: {
-    backgroundColor: Colors.surfaceSunken,
-    borderWidth: 1.5,
-    borderColor: Colors.neuSunkenBorder,
     transform: [{ translateY: 1 }],
+    shadowOpacity: 0,
+    elevation: 0,
   },
   disabled: {
     opacity: 0.45,
