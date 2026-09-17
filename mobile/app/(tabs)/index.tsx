@@ -123,23 +123,37 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>ACTIVITY SNAPSHOT</Text>
-            <Text style={styles.metaLabel}>This Week</Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/progress')}>
+              <Text style={styles.viewAllText}>Full Radar & Heatmap →</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.metricGrid}>
-            <NeuCard variant="raisedSm" style={styles.metricCol}>
+            <NeuCard
+              variant="raisedSm"
+              style={styles.metricCol}
+              onPress={() => router.push('/(tabs)/progress')}
+            >
               <Text style={styles.metricLabel}>Time Spoken</Text>
               <Text style={styles.metricValue}>{todayMinutes + 45}m</Text>
               <Text style={styles.metricSub}>this week</Text>
             </NeuCard>
 
-            <NeuCard variant="raisedSm" style={styles.metricCol}>
+            <NeuCard
+              variant="raisedSm"
+              style={styles.metricCol}
+              onPress={() => router.push('/(tabs)/progress')}
+            >
               <Text style={styles.metricLabel}>Fluency</Text>
               <Text style={styles.metricValue}>88%</Text>
               <Text style={styles.metricSub}>Consistent</Text>
             </NeuCard>
 
-            <NeuCard variant="raisedSm" style={styles.metricCol}>
+            <NeuCard
+              variant="raisedSm"
+              style={styles.metricCol}
+              onPress={() => router.push('/(tabs)/progress')}
+            >
               <Text style={styles.metricLabel}>Streak</Text>
               <Text style={styles.metricValue}>{streak}d</Text>
               <Text style={styles.metricSub}>Active</Text>

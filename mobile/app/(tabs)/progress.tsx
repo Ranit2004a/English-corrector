@@ -7,12 +7,14 @@ import { ProgressRepository } from '../../db/repositories/progressRepository';
 import { DailyProgress } from '../../types';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { NeuCard } from '../../components/ui/NeuCard';
-import { Flame, Clock, Award, TrendingUp } from 'lucide-react-native';
+import { SkillRadarChart } from '../../components/ui/SkillRadarChart';
+import { ActivityHeatmap } from '../../components/ui/ActivityHeatmap';
+import { Flame, Clock, Award, TrendingUp, Sparkles } from 'lucide-react-native';
 
 const TIMEFRAMES = ['7 Days', '30 Days', 'All Time'] as const;
 
 export default function ProgressScreen() {
-  const { streak, todayMinutes } = useUserStore();
+  const { streak, todayMinutes, dailyGoal } = useUserStore();
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('7 Days');
   const [progressData, setProgressData] = useState<DailyProgress[]>([]);
 
@@ -28,7 +30,6 @@ export default function ProgressScreen() {
   /**
    * Timeframe Aggregated Mastery Scores:
    * Aggregates stored DailyProgress records (grammar_score, vocabulary_score, pronunciation_score, fluency_score).
-   * Note: "Natural Idiomatic Flow" maps directly to fluency_score (reflecting natural speech flow and conversational fluency).
    */
   const aggregatedScores = React.useMemo(() => {
     if (!progressData || progressData.length === 0) {
@@ -37,6 +38,7 @@ export default function ProgressScreen() {
         vocabulary: 80,
         pronunciation: 80,
         fluency: 80,
+        naturalness: 82,
       };
     }
 
@@ -55,11 +57,18 @@ export default function ProgressScreen() {
 
     const count = targetSet.length || 1;
 
+    const grammar = Math.round(sum.grammar / count);
+    const vocabulary = Math.round(sum.vocabulary / count);
+    const pronunciation = Math.round(sum.pronunciation / count);
+    const fluency = Math.round(sum.fluency / count);
+    const naturalness = Math.round((fluency * 0.6 + vocabulary * 0.4));
+
     return {
-      grammar: Math.round(sum.grammar / count),
-      vocabulary: Math.round(sum.vocabulary / count),
-      pronunciation: Math.round(sum.pronunciation / count),
-      fluency: Math.round(sum.fluency / count),
+      grammar,
+      vocabulary,
+      pronunciation,
+      fluency,
+      naturalness,
     };
   }, [progressData]);
 
@@ -165,7 +174,17 @@ export default function ProgressScreen() {
           </NeuCard>
         </View>
 
-        {/* Speaking Practice Activity Chart */}
+        {/* 1. Interactive 5-Axis CEFR Skill Radar Chart */}
+        <SkillRadarChart scores={aggregatedScores} size={290} />
+
+        {/* 2. Monthly Speaking Activity Heatmap */}
+        <ActivityHeatmap
+          progressData={progressData}
+          daysCount={28}
+          dailyGoalMinutes={dailyGoal || 15}
+        />
+
+        {/* 3. Speaking Practice Bar Chart */}
         <NeuCard variant="raised" style={styles.chartCard}>
           <View style={styles.cardHeader}>
             <View style={styles.cardHeaderTitleRow}>
@@ -199,7 +218,7 @@ export default function ProgressScreen() {
           </View>
         </NeuCard>
 
-        {/* Mastery Breakdown */}
+        {/* 4. Detailed Skill Area Progress */}
         <NeuCard variant="raised" style={styles.breakdownCard}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>AREA ANALYSIS</Text>
@@ -234,13 +253,13 @@ export default function ProgressScreen() {
               <ProgressBar progress={aggregatedScores.pronunciation} max={100} height={8} color={Colors.primaryAccent} />
             </View>
 
-            {/* Naturalness / Fluency: Mapped directly to fluency_score */}
+            {/* Naturalness */}
             <View style={styles.breakdownItem}>
               <View style={styles.breakdownRow}>
                 <Text style={styles.breakdownName}>Natural Idiomatic Flow</Text>
-                <Text style={styles.breakdownCount}>{aggregatedScores.fluency}%</Text>
+                <Text style={styles.breakdownCount}>{aggregatedScores.naturalness}%</Text>
               </View>
-              <ProgressBar progress={aggregatedScores.fluency} max={100} height={8} color={Colors.primaryAccent} />
+              <ProgressBar progress={aggregatedScores.naturalness} max={100} height={8} color={Colors.primaryAccent} />
             </View>
           </View>
         </NeuCard>
