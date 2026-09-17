@@ -160,6 +160,17 @@ export async function getDatabase(): Promise<IDatabase> {
     dbInstance = await SQLite.openDatabaseAsync('english_corrector.db');
     if (dbInstance) {
       await dbInstance.execAsync(INITIAL_SCHEMA_SQL);
+      // Ensure columns exist in case of upgrading existing DB
+      try {
+        await dbInstance.execAsync('ALTER TABLE messages ADD COLUMN audio_uri TEXT;');
+      } catch (e) {
+        // Column already exists
+      }
+      try {
+        await dbInstance.execAsync('ALTER TABLE corrections ADD COLUMN audio_uri TEXT;');
+      } catch (e) {
+        // Column already exists
+      }
     }
     return dbInstance as IDatabase;
   } catch (error) {
@@ -173,5 +184,11 @@ export async function initDatabase(): Promise<void> {
   const db = await getDatabase();
   if (Platform.OS !== 'web' && db.execAsync) {
     await db.execAsync(INITIAL_SCHEMA_SQL);
+    try {
+      await db.execAsync('ALTER TABLE messages ADD COLUMN audio_uri TEXT;');
+    } catch (e) {}
+    try {
+      await db.execAsync('ALTER TABLE corrections ADD COLUMN audio_uri TEXT;');
+    } catch (e) {}
   }
 }

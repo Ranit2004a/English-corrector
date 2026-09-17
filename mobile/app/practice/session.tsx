@@ -17,6 +17,7 @@ import { MessageBubble } from '../../components/chat/MessageBubble';
 import { AudioWaveform } from '../../components/ui/AudioWaveform';
 import { NeuIconButton } from '../../components/ui/NeuIconButton';
 import { SpeechService } from '../../services/speech';
+import { AudioRecorderService } from '../../services/audioRecorder';
 import {
   ArrowLeft,
   Mic,
@@ -70,25 +71,34 @@ export default function PracticeSessionScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleToggleVoice = () => {
+  const handleToggleVoice = async () => {
     if (practiceState === 'LISTENING') {
       SpeechService.stopListening();
+      const audioUri = await AudioRecorderService.stopRecording();
       setPracticeState('IDLE');
     } else if (practiceState === 'IDLE') {
+      // Start recording user audio
+      await AudioRecorderService.startRecording();
+
       SpeechService.startListening({
         onStart: () => {
           setPracticeState('LISTENING');
         },
-        onResult: (transcript) => {
+        onResult: async (transcript) => {
+          const audioUri = await AudioRecorderService.stopRecording();
           if (transcript && transcript.trim()) {
-            sendMessage(transcript);
+            sendMessage(transcript, audioUri || undefined);
           }
         },
-        onError: (err) => {
+        onError: async (err) => {
           console.warn('Voice recognition error:', err);
+          await AudioRecorderService.stopRecording();
           setPracticeState('IDLE');
         },
-        onEnd: () => {
+        onEnd: async () => {
+          if (AudioRecorderService.getIsRecording()) {
+            await AudioRecorderService.stopRecording();
+          }
           setPracticeState('IDLE');
         },
       });
@@ -113,6 +123,8 @@ export default function PracticeSessionScreen() {
           style: 'destructive',
           onPress: async () => {
             SpeechService.stopListening();
+            await AudioRecorderService.stopRecording();
+            await AudioRecorderService.stopAudio();
             const summary = await endSession();
             if (summary) {
               router.replace('/practice/summary');

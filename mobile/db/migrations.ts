@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS messages (
   session_id TEXT NOT NULL,
   role TEXT NOT NULL CHECK(role IN ('user', 'assistant')),
   text TEXT NOT NULL,
+  audio_uri TEXT,
   created_at TEXT NOT NULL,
   FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE
 );
@@ -43,6 +44,7 @@ CREATE TABLE IF NOT EXISTS corrections (
   explanation TEXT NOT NULL,
   category TEXT NOT NULL CHECK(category IN ('grammar', 'vocabulary', 'pronunciation', 'naturalness')),
   severity TEXT NOT NULL CHECK(severity IN ('minor', 'moderate', 'important')),
+  audio_uri TEXT,
   created_at TEXT NOT NULL,
   FOREIGN KEY (message_id) REFERENCES messages (id) ON DELETE SET NULL,
   FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE

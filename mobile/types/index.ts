@@ -40,6 +40,7 @@ export interface Message {
   session_id: string;
   role: 'user' | 'assistant';
   text: string;
+  audio_uri?: string;
   created_at: string;
 }
 
@@ -52,6 +53,7 @@ export interface Correction {
   explanation: string;
   category: CorrectionCategory;
   severity: CorrectionSeverity;
+  audio_uri?: string;
   created_at: string;
 }
 

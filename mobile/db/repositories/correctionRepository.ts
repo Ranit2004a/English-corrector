@@ -9,7 +9,8 @@ export const CorrectionRepository = {
     category: CorrectionCategory,
     severity: CorrectionSeverity,
     session_id?: string,
-    message_id?: string
+    message_id?: string,
+    audio_uri?: string
   ): Promise<Correction> {
     const db = await getDatabase();
     const id = `corr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -24,12 +25,13 @@ export const CorrectionRepository = {
       explanation,
       category,
       severity,
+      audio_uri,
       created_at,
     };
 
     await db.runAsync(
-      `INSERT INTO corrections (id, session_id, message_id, original, corrected, explanation, category, severity, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-      [item.id, item.session_id || null, item.message_id || null, item.original, item.corrected, item.explanation, item.category, item.severity, item.created_at]
+      `INSERT INTO corrections (id, session_id, message_id, original, corrected, explanation, category, severity, audio_uri, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+      [item.id, item.session_id || null, item.message_id || null, item.original, item.corrected, item.explanation, item.category, item.severity, item.audio_uri || null, item.created_at]
     );
 
     return item;
@@ -50,6 +52,7 @@ export const CorrectionRepository = {
       explanation: r.explanation,
       category: r.category as CorrectionCategory,
       severity: r.severity as CorrectionSeverity,
+      audio_uri: r.audio_uri || undefined,
       created_at: r.created_at,
     }));
   },
@@ -76,6 +79,7 @@ export const CorrectionRepository = {
       explanation: r.explanation,
       category: r.category as CorrectionCategory,
       severity: r.severity as CorrectionSeverity,
+      audio_uri: r.audio_uri || undefined,
       created_at: r.created_at,
     }));
   },
@@ -94,5 +98,13 @@ export const CorrectionRepository = {
       }
     });
     return counts;
+  },
+
+  async clearSessionAudio(session_id: string): Promise<void> {
+    const db = await getDatabase();
+    await db.runAsync(
+      `UPDATE corrections SET audio_uri = NULL WHERE session_id = ?;`,
+      [session_id]
+    );
   },
 };

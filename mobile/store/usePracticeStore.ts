@@ -7,6 +7,7 @@ import { VocabularyRepository } from '../db/repositories/vocabularyRepository';
 import { ProgressRepository } from '../db/repositories/progressRepository';
 import { ApiService } from '../services/api';
 import { TTSService } from '../services/tts';
+import { AudioRecorderService } from '../services/audioRecorder';
 
 interface PracticeStateStore {
   currentSession: Session | null;
@@ -22,7 +23,7 @@ interface PracticeStateStore {
   lastSummary: SessionSummaryPayload | null;
 
   startSession: (topic: string, level: CEFRLevel, starterPrompt?: string) => Promise<void>;
-  sendMessage: (text: string) => Promise<void>;
+  sendMessage: (text: string, audioUri?: string) => Promise<void>;
   endSession: () => Promise<SessionSummaryPayload | null>;
   setPracticeState: (state: PracticeState) => void;
   toggleMute: () => void;
@@ -78,13 +79,13 @@ export const usePracticeStore = create<PracticeStateStore>((set, get) => ({
     }
   },
 
-  sendMessage: async (text: string) => {
+  sendMessage: async (text: string, audioUri?: string) => {
     const { currentSession, messages, isMuted } = get();
     if (!currentSession || !text.trim()) return;
 
-    // 1. Save & display user message
+    // 1. Save & display user message with optional audio URI
     set({ practiceState: 'PROCESSING' });
-    const userMsg = await MessageRepository.addMessage(currentSession.id, 'user', text.trim());
+    const userMsg = await MessageRepository.addMessage(currentSession.id, 'user', text.trim(), audioUri);
     const updatedMessages = [...messages, userMsg];
     set({ messages: updatedMessages });
 
@@ -107,7 +108,7 @@ export const usePracticeStore = create<PracticeStateStore>((set, get) => ({
       // 4. Save AI message to SQLite
       const aiMsg = await MessageRepository.addMessage(currentSession.id, 'assistant', result.reply);
 
-      // 5. Save any corrections to SQLite
+      // 5. Save any corrections to SQLite linked with audioUri
       const savedCorrections: Correction[] = [];
       for (const item of result.corrections || []) {
         const corr = await CorrectionRepository.addCorrection(
@@ -117,7 +118,8 @@ export const usePracticeStore = create<PracticeStateStore>((set, get) => ({
           item.category,
           item.severity,
           currentSession.id,
-          userMsg.id
+          userMsg.id,
+          audioUri
         );
         savedCorrections.push(corr);
       }
@@ -163,6 +165,8 @@ export const usePracticeStore = create<PracticeStateStore>((set, get) => ({
     if (!currentSession) return null;
 
     TTSService.stop();
+    AudioRecorderService.stopAudio();
+    AudioRecorderService.stopRecording();
 
     try {
       // Generate summary from backend or local calculator
@@ -183,6 +187,13 @@ export const usePracticeStore = create<PracticeStateStore>((set, get) => ({
         corrections.length
       );
 
+      // Delete recorded audio files from device storage to prevent storage buildup
+      await AudioRecorderService.cleanupSessionAudio();
+
+      // Clear audio references from SQLite database
+      await MessageRepository.clearSessionAudio(currentSession.id);
+      await CorrectionRepository.clearSessionAudio(currentSession.id);
+
       // Save newly discovered words to SQLite
       for (const word of summary.new_words || []) {
         await VocabularyRepository.addVocabulary(
@@ -202,34 +213,62 @@ export const usePracticeStore = create<PracticeStateStore>((set, get) => ({
         summary.fluency_score
       );
 
+      // Strip audio_uri from memory state to keep memory clean
+      const sanitizedMessages = messages.map(m => ({ ...m, audio_uri: undefined }));
+      const sanitizedCorrections = corrections.map(c => ({ ...c, audio_uri: undefined }));
+
       set({
+        messages: sanitizedMessages,
+        corrections: sanitizedCorrections,
         lastSummary: summary,
         practiceState: 'IDLE',
       });
 
       return summary;
     } catch (e) {
-      console.warn('Error concluding session:', e);
+      console.warn('Failed to summarize session cleanly:', e);
+      // Clean up audio files even on error
+      await AudioRecorderService.cleanupSessionAudio();
       return null;
     }
   },
 
   setPracticeState: (practiceState: PracticeState) => set({ practiceState }),
+
   toggleMute: () => {
-    const isMuted = !get().isMuted;
-    if (isMuted) TTSService.stop();
-    set({ isMuted });
+    const next = !get().isMuted;
+    if (next) {
+      TTSService.stop();
+      AudioRecorderService.stopAudio();
+    }
+    set({ isMuted: next });
   },
+
   toggleFeedback: () => set(state => ({ isFeedbackExpanded: !state.isFeedbackExpanded })),
+
   setTimerSeconds: (timerSeconds: number) => set({ timerSeconds }),
+
   incrementTimer: () => set(state => ({ timerSeconds: state.timerSeconds + 1 })),
+
   speakText: (text: string) => {
     if (!get().isMuted) {
       TTSService.speak(text);
     }
   },
-  resetSession: () => {
+
+  resetSession: async () => {
+    const { currentSession } = get();
     TTSService.stop();
+    AudioRecorderService.stopAudio();
+    AudioRecorderService.stopRecording();
+
+    // Delete recorded audio files and nullify in DB
+    await AudioRecorderService.cleanupSessionAudio();
+    if (currentSession?.id) {
+      await MessageRepository.clearSessionAudio(currentSession.id);
+      await CorrectionRepository.clearSessionAudio(currentSession.id);
+    }
+
     set({
       currentSession: null,
       practiceState: 'IDLE',
@@ -241,5 +280,5 @@ export const usePracticeStore = create<PracticeStateStore>((set, get) => ({
       errorMessage: null,
       lastSummary: null,
     });
-  }
+  },
 }));

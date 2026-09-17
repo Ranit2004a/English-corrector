@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Message, Correction } from '../../types';
 import { Colors, NeuShadows, Radius, Typography, Spacing } from '../../constants/theme';
 import { TTSService } from '../../services/tts';
+import { AudioRecorderService } from '../../services/audioRecorder';
 import { CorrectionCard } from '../feedback/CorrectionCard';
-import { Volume2, ChevronDown, ChevronUp, Sparkles } from 'lucide-react-native';
+import { Volume2, VolumeX, Play, Square, ChevronDown, ChevronUp, Sparkles, Mic } from 'lucide-react-native';
 
 interface MessageBubbleProps {
   message: Message;
@@ -13,6 +14,7 @@ interface MessageBubbleProps {
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, corrections = [] }) => {
   const [showFeedback, setShowFeedback] = useState(false);
+  const [isPlayingUserVoice, setIsPlayingUserVoice] = useState(false);
   const isAI = message.role === 'assistant';
 
   const formatTime = (iso: string) => {
@@ -26,6 +28,22 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
 
   const handleSpeak = () => {
     TTSService.speak(message.text);
+  };
+
+  const handleToggleUserVoice = async () => {
+    if (!message.audio_uri) return;
+
+    if (isPlayingUserVoice) {
+      await AudioRecorderService.stopAudio();
+      setIsPlayingUserVoice(false);
+    } else {
+      setIsPlayingUserVoice(true);
+      await AudioRecorderService.playAudio(message.audio_uri, {
+        onStart: () => setIsPlayingUserVoice(true),
+        onFinish: () => setIsPlayingUserVoice(false),
+        onError: () => setIsPlayingUserVoice(false),
+      });
+    }
   };
 
   return (
@@ -47,8 +65,28 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
         {isAI && (
           <View style={styles.aiActionRow}>
             <TouchableOpacity activeOpacity={0.8} onPress={handleSpeak} style={styles.listenButton}>
-              <Volume2 size={15} color={Colors.primaryAccent} />
+              <Volume2 size={14} color={Colors.primaryAccent} />
               <Text style={styles.listenText}>Listen</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* User Recorded Audio Playback Trigger */}
+        {!isAI && message.audio_uri && (
+          <View style={styles.userActionRow}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleToggleUserVoice}
+              style={[styles.userVoiceButton, isPlayingUserVoice && styles.userVoiceButtonActive]}
+            >
+              {isPlayingUserVoice ? (
+                <Square size={12} color="#FFFFFF" fill="#FFFFFF" />
+              ) : (
+                <Play size={12} color="#FFFFFF" fill="#FFFFFF" />
+              )}
+              <Text style={styles.userVoiceText}>
+                {isPlayingUserVoice ? 'Playing...' : 'Play My Voice'}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -193,5 +231,33 @@ const styles = StyleSheet.create({
   feedbackDrawer: {
     width: '100%',
     marginTop: 8,
+  },
+  userActionRow: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  userVoiceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: Radius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.35)',
+  },
+  userVoiceButtonActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.35)',
+  },
+  userVoiceText: {
+    ...Typography.labelMd,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
 });
