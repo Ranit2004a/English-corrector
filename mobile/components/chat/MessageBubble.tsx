@@ -4,6 +4,7 @@ import { Message, Correction } from '../../types';
 import { Colors, NeuShadows, Radius, Typography, Spacing } from '../../constants/theme';
 import { TTSService } from '../../services/tts';
 import { AudioRecorderService } from '../../services/audioRecorder';
+import { HapticService } from '../../services/haptics';
 import { CorrectionCard } from '../feedback/CorrectionCard';
 import { Volume2, VolumeX, Play, Square, ChevronDown, ChevronUp, Sparkles, Mic } from 'lucide-react-native';
 
@@ -27,11 +28,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
   };
 
   const handleSpeak = () => {
+    HapticService.selection();
     TTSService.speak(message.text);
   };
 
   const handleToggleUserVoice = async () => {
     if (!message.audio_uri) return;
+    HapticService.selection();
 
     if (isPlayingUserVoice) {
       await AudioRecorderService.stopAudio();
@@ -44,6 +47,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
         onError: () => setIsPlayingUserVoice(false),
       });
     }
+  };
+
+  const handleToggleFeedback = () => {
+    HapticService.selection();
+    setShowFeedback(!showFeedback);
   };
 
   return (
@@ -97,7 +105,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
         <View style={styles.feedbackContainer}>
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => setShowFeedback(!showFeedback)}
+            onPress={handleToggleFeedback}
             style={styles.feedbackTrigger}
           >
             <Sparkles size={13} color={Colors.primaryAccent} />

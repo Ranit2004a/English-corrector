@@ -6,6 +6,7 @@ import { Colors, NeuShadows, Radius, Spacing, Typography } from '../../constants
 import { VocabularyRepository } from '../../db/repositories/vocabularyRepository';
 import { VocabularyItem } from '../../types';
 import { TTSService } from '../../services/tts';
+import { HapticService } from '../../services/haptics';
 import { NeuIconButton } from '../../components/ui/NeuIconButton';
 import { NeuCard } from '../../components/ui/NeuCard';
 import { ArrowLeft, Volume2, CheckCircle2, Circle, BookOpen, Sparkles } from 'lucide-react-native';
@@ -69,6 +70,7 @@ export default function VocabularyScreen() {
   }, [filterLearned]);
 
   const handleToggleLearned = async (id: string, current: boolean) => {
+    HapticService.notificationSuccess();
     await VocabularyRepository.toggleLearned(id, !current);
     setVocabulary((prev) =>
       prev.map((item) => (item.id === id ? { ...item, learned: !current } : item))
@@ -76,6 +78,7 @@ export default function VocabularyScreen() {
   };
 
   const handlePronounce = (word: string) => {
+    HapticService.selection();
     TTSService.speak(word);
   };
 
@@ -189,6 +192,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.margin,
@@ -209,6 +215,9 @@ const styles = StyleSheet.create({
     color: Colors.muted,
   },
   filterRow: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     flexDirection: 'row',
     paddingHorizontal: Spacing.margin,
     paddingVertical: 10,
@@ -239,6 +248,9 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   listContainer: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     paddingHorizontal: Spacing.margin,
     paddingBottom: 40,
     gap: 14,

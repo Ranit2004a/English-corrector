@@ -154,6 +154,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     paddingHorizontal: Spacing.margin,
     paddingTop: Spacing.sm,
     paddingBottom: Spacing.xs,
@@ -169,6 +172,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   filterContainer: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     height: 54,
     marginVertical: 4,
     justifyContent: 'center',
@@ -205,6 +211,9 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   listContainer: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     paddingHorizontal: Spacing.margin,
     paddingBottom: 40,
     gap: 14,

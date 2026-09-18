@@ -1,6 +1,15 @@
-import React from 'react';
-import { View, TouchableOpacity, StyleSheet, ViewStyle, StyleProp } from 'react-native';
-import { Colors, NeuShadows, Radius } from '../../constants/theme';
+import React, { useRef, useState } from 'react';
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  Animated,
+} from 'react-native';
+import { Radius } from '../../constants/theme';
+import { useTheme } from '../../constants/useTheme';
+import { HapticService } from '../../services/haptics';
 
 interface NeuCardProps {
   children: React.ReactNode;
@@ -10,37 +19,68 @@ interface NeuCardProps {
   activeOpacity?: number;
 }
 
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
 export const NeuCard: React.FC<NeuCardProps> = ({
   children,
   variant = 'raised',
   onPress,
   style,
-  activeOpacity = 0.88,
 }) => {
+  const { shadows } = useTheme();
+  const [isPressed, setIsPressed] = useState(false);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
   const getShadowStyle = () => {
+    if (isPressed) {
+      return shadows.sunken;
+    }
     switch (variant) {
       case 'raisedSm':
-        return NeuShadows.raisedSm;
+        return shadows.raisedSm;
       case 'raisedLg':
-        return NeuShadows.raisedLg;
+        return shadows.raisedLg;
       case 'sunken':
-        return NeuShadows.sunken;
+        return shadows.sunken;
       case 'accent':
-        return NeuShadows.accentRaised;
+        return shadows.accentRaised;
       default:
-        return NeuShadows.raised;
+        return shadows.raised;
     }
+  };
+
+  const handlePressIn = () => {
+    setIsPressed(true);
+    HapticService.impactLight();
+    Animated.spring(scaleAnim, {
+      toValue: 0.98,
+      useNativeDriver: true,
+      speed: 30,
+      bounciness: 4,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    setIsPressed(false);
+    Animated.spring(scaleAnim, {
+      toValue: 1.0,
+      useNativeDriver: true,
+      speed: 30,
+      bounciness: 4,
+    }).start();
   };
 
   if (onPress) {
     return (
-      <TouchableOpacity
-        activeOpacity={activeOpacity}
+      <AnimatedTouchable
+        activeOpacity={0.9}
         onPress={onPress}
-        style={[styles.base, getShadowStyle(), style]}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        style={[styles.base, getShadowStyle(), style, { transform: [{ scale: scaleAnim }] }]}
       >
         {children}
-      </TouchableOpacity>
+      </AnimatedTouchable>
     );
   }
 

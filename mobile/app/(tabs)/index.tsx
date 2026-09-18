@@ -288,6 +288,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   container: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     padding: Spacing.margin,
     gap: Spacing.lg,
     paddingBottom: 40,
@@ -441,6 +444,7 @@ const styles = StyleSheet.create({
   },
   metricCol: {
     flex: 1,
+    minWidth: 80,
     paddingVertical: 14,
     paddingHorizontal: 10,
     alignItems: 'center',
@@ -473,6 +477,7 @@ const styles = StyleSheet.create({
   },
   topicCard: {
     width: '48%',
+    minWidth: 140,
     flexGrow: 1,
     gap: 8,
     padding: 16,
@@ -503,6 +508,7 @@ const styles = StyleSheet.create({
   },
   hubCard: {
     flex: 1,
+    minWidth: 140,
     gap: 6,
     padding: 16,
   },

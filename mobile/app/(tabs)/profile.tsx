@@ -19,6 +19,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { NeuCard } from '../../components/ui/NeuCard';
 import { ApiService } from '../../services/api';
+import { HapticService } from '../../services/haptics';
 import {
   User,
   Sliders,
@@ -31,6 +32,9 @@ import {
   Server,
   RefreshCw,
   Sparkles,
+  Moon,
+  Sun,
+  Vibrate,
 } from 'lucide-react-native';
 
 const CEFR_LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -158,7 +162,10 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   key={rate}
                   activeOpacity={0.8}
-                  onPress={() => updateSetting('speech_rate', rate)}
+                  onPress={() => {
+                    HapticService.selection();
+                    updateSetting('speech_rate', rate);
+                  }}
                   style={[
                     styles.ratePill,
                     isSelected ? styles.ratePillActive : styles.ratePillIdle,
@@ -175,6 +182,88 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               );
             })}
+          </View>
+        </NeuCard>
+
+        {/* Appearance & Tactile Haptics */}
+        <NeuCard variant="raised" style={styles.card}>
+          <View style={styles.sectionTitleRow}>
+            <Sparkles size={18} color={Colors.primaryAccent} />
+            <Text style={styles.cardSectionTitle}>APPEARANCE & TACTILE FEEL</Text>
+          </View>
+          <Text style={styles.hintText}>
+            Personalize your tactile interface and visual lighting.
+          </Text>
+
+          {/* Dark Mode Switch */}
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleLeft}>
+              <View style={styles.toggleIconContainer}>
+                {settings.dark_mode ? (
+                  <Moon size={18} color={Colors.primaryAccent} />
+                ) : (
+                  <Sun size={18} color={Colors.primaryAccent} />
+                )}
+              </View>
+              <View>
+                <Text style={styles.toggleTitle}>Dark Titanium Theme</Text>
+                <Text style={styles.toggleSubtitle}>
+                  {settings.dark_mode ? 'Graphite charcoal palette' : 'Soft Neumorphic canvas'}
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                HapticService.impactMedium();
+                updateSetting('dark_mode', !settings.dark_mode);
+              }}
+              style={[
+                styles.switchPill,
+                settings.dark_mode ? styles.switchPillActive : styles.switchPillIdle,
+              ]}
+            >
+              <View
+                style={[
+                  styles.switchThumb,
+                  settings.dark_mode && styles.switchThumbActive,
+                ]}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Haptic Feedback Switch */}
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleLeft}>
+              <View style={styles.toggleIconContainer}>
+                <Vibrate size={18} color={Colors.primaryAccent} />
+              </View>
+              <View>
+                <Text style={styles.toggleTitle}>Tactile Haptic Feedback</Text>
+                <Text style={styles.toggleSubtitle}>Micro-vibrations on button press</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                const next = !settings.haptic_feedback;
+                if (next) HapticService.impactLight();
+                updateSetting('haptic_feedback', next);
+              }}
+              style={[
+                styles.switchPill,
+                settings.haptic_feedback ? styles.switchPillActive : styles.switchPillIdle,
+              ]}
+            >
+              <View
+                style={[
+                  styles.switchThumb,
+                  settings.haptic_feedback && styles.switchThumbActive,
+                ]}
+              />
+            </TouchableOpacity>
           </View>
         </NeuCard>
 
@@ -301,6 +390,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   container: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     padding: Spacing.margin,
     gap: Spacing.lg,
     paddingBottom: 40,
@@ -498,5 +590,63 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     fontSize: 11,
     color: Colors.onSurface,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.2)',
+  },
+  toggleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  toggleIconContainer: {
+    ...NeuShadows.raisedSm,
+    width: 36,
+    height: 36,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toggleTitle: {
+    ...Typography.bodyMd,
+    fontWeight: '700',
+    color: Colors.onSurface,
+  },
+  toggleSubtitle: {
+    ...Typography.labelSm,
+    color: Colors.muted,
+    marginTop: 1,
+  },
+  switchPill: {
+    width: 52,
+    height: 30,
+    borderRadius: 15,
+    padding: 3,
+    justifyContent: 'center',
+  },
+  switchPillIdle: {
+    ...NeuShadows.sunken,
+  },
+  switchPillActive: {
+    backgroundColor: '#111111',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.35)',
+  },
+  switchThumb: {
+    ...NeuShadows.raisedSm,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+  },
+  switchThumbActive: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#FFFFFF',
   },
 });

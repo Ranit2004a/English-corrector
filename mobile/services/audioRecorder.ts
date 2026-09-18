@@ -1,6 +1,4 @@
 import { Platform } from 'react-native';
-import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
 
 export interface AudioPlaybackStatusListener {
   onStart?: () => void;
@@ -8,16 +6,33 @@ export interface AudioPlaybackStatusListener {
   onError?: (err: any) => void;
 }
 
+function getExpoAudio(): any {
+  try {
+    const ExpoAV = require('expo-av');
+    return ExpoAV?.Audio || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function getFileSystem(): any {
+  try {
+    return require('expo-file-system');
+  } catch (e) {
+    return null;
+  }
+}
+
 export class AudioRecorderService {
-  private static recording: Audio.Recording | null = null;
-  private static activeSound: Audio.Sound | null = null;
+  private static recording: any = null;
+  private static activeSound: any = null;
   private static isRecording = false;
   private static sessionAudioUris: Set<string> = new Set();
 
   // Web MediaRecorder references
   private static webMediaRecorder: any = null;
   private static webAudioChunks: any[] = [];
-  private static webActiveAudio: HTMLAudioElement | null = null;
+  private static webActiveAudio: any = null;
 
   static async requestPermissions(): Promise<boolean> {
     try {
@@ -31,8 +46,12 @@ export class AudioRecorderService {
         return true;
       }
 
-      const response = await Audio.requestPermissionsAsync();
-      return response.granted;
+      const Audio = getExpoAudio();
+      if (Audio?.requestPermissionsAsync) {
+        const response = await Audio.requestPermissionsAsync();
+        return response.granted;
+      }
+      return true;
     } catch (e) {
       console.warn('Audio permission request failed:', e);
       return false;
@@ -65,6 +84,12 @@ export class AudioRecorderService {
         } catch (webErr) {
           console.warn('Web MediaRecorder failed:', webErr);
         }
+      }
+
+      const Audio = getExpoAudio();
+      if (!Audio) {
+        console.warn('Native Audio module not available in this environment');
+        return false;
       }
 
       // Native iOS & Android recording
@@ -127,14 +152,17 @@ export class AudioRecorderService {
         const uri = this.recording.getURI();
         this.recording = null;
 
-        // Reset audio mode for playback
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: false,
-          shouldDuckAndroid: true,
-          playThroughEarpieceAndroid: false,
-        });
+        const Audio = getExpoAudio();
+        if (Audio) {
+          // Reset audio mode for playback
+          await Audio.setAudioModeAsync({
+            allowsRecordingIOS: false,
+            playsInSilentModeIOS: true,
+            staysActiveInBackground: false,
+            shouldDuckAndroid: true,
+            playThroughEarpieceAndroid: false,
+          });
+        }
 
         if (uri) {
           this.sessionAudioUris.add(uri);
@@ -169,12 +197,19 @@ export class AudioRecorderService {
           listeners?.onFinish?.();
         };
 
-        audio.onerror = (err) => {
+        audio.onerror = (err: any) => {
           this.webActiveAudio = null;
           listeners?.onError?.(err);
         };
 
         await audio.play();
+        return;
+      }
+
+      const Audio = getExpoAudio();
+      if (!Audio) {
+        console.warn('Native Audio module not available for playback');
+        listeners?.onFinish?.();
         return;
       }
 
@@ -190,7 +225,7 @@ export class AudioRecorderService {
       const { sound } = await Audio.Sound.createAsync(
         { uri },
         { shouldPlay: true },
-        (status) => {
+        (status: any) => {
           if (status.isLoaded) {
             if (status.didJustFinish) {
               sound.unloadAsync();
@@ -247,7 +282,8 @@ export class AudioRecorderService {
       }
 
       // Native file deletion
-      if (uri.startsWith('file://')) {
+      const FileSystem = getFileSystem();
+      if (FileSystem && uri.startsWith('file://')) {
         await FileSystem.deleteAsync(uri, { idempotent: true });
       }
       this.sessionAudioUris.delete(uri);

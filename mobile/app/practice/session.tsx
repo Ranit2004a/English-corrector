@@ -18,6 +18,7 @@ import { AudioWaveform } from '../../components/ui/AudioWaveform';
 import { NeuIconButton } from '../../components/ui/NeuIconButton';
 import { SpeechService } from '../../services/speech';
 import { AudioRecorderService } from '../../services/audioRecorder';
+import { HapticService } from '../../services/haptics';
 import {
   ArrowLeft,
   Mic,
@@ -72,6 +73,7 @@ export default function PracticeSessionScreen() {
   };
 
   const handleToggleVoice = async () => {
+    HapticService.impactMedium();
     if (practiceState === 'LISTENING') {
       SpeechService.stopListening();
       const audioUri = await AudioRecorderService.stopRecording();
@@ -87,6 +89,7 @@ export default function PracticeSessionScreen() {
         onResult: async (transcript) => {
           const audioUri = await AudioRecorderService.stopRecording();
           if (transcript && transcript.trim()) {
+            HapticService.notificationSuccess();
             sendMessage(transcript, audioUri || undefined);
           }
         },
@@ -342,6 +345,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -408,6 +414,9 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   dialogueContainer: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     paddingHorizontal: Spacing.margin,
     paddingTop: 10,
     paddingBottom: 24,
@@ -429,6 +438,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   interactionDock: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     backgroundColor: Colors.surface,
     borderTopLeftRadius: Radius.xxl,
     borderTopRightRadius: Radius.xxl,

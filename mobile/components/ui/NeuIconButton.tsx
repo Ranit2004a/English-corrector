@@ -1,6 +1,15 @@
-import React, { useState } from 'react';
-import { TouchableOpacity, StyleSheet, ViewStyle, StyleProp, GestureResponderEvent } from 'react-native';
-import { Colors, NeuShadows, Radius } from '../../constants/theme';
+import React, { useRef, useState } from 'react';
+import {
+  TouchableOpacity,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  GestureResponderEvent,
+  Animated,
+} from 'react-native';
+import { Radius } from '../../constants/theme';
+import { useTheme } from '../../constants/useTheme';
+import { HapticService } from '../../services/haptics';
 
 interface NeuIconButtonProps {
   icon: React.ReactNode;
@@ -23,49 +32,75 @@ export const NeuIconButton: React.FC<NeuIconButtonProps> = ({
   style,
   disabled = false,
 }) => {
+  const { shadows, colors } = useTheme();
   const [isPressed, setIsPressed] = useState(false);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const getVariantStyle = () => {
     if (isPressed) {
-      return NeuShadows.sunken;
+      return shadows.sunken;
     }
     switch (variant) {
       case 'sunken':
-        return NeuShadows.sunken;
+        return shadows.sunken;
       case 'accent':
-        return NeuShadows.accentRaised;
+        return shadows.accentRaised;
       case 'danger':
         return [
-          NeuShadows.raisedSm,
-          { backgroundColor: Colors.errorContainer, borderColor: 'rgba(255,255,255,0.8)' },
+          shadows.raisedSm,
+          { backgroundColor: colors.errorContainer, borderColor: 'rgba(255,255,255,0.8)' },
         ];
       default:
-        return NeuShadows.raisedSm;
+        return shadows.raisedSm;
     }
+  };
+
+  const handlePressIn = () => {
+    if (disabled) return;
+    setIsPressed(true);
+    HapticService.impactLight();
+    Animated.spring(scaleAnim, {
+      toValue: 0.94,
+      useNativeDriver: true,
+      speed: 35,
+      bounciness: 4,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    setIsPressed(false);
+    Animated.spring(scaleAnim, {
+      toValue: 1.0,
+      useNativeDriver: true,
+      speed: 35,
+      bounciness: 4,
+    }).start();
   };
 
   const borderRadius = rounded === 'circle' ? size / 2 : Radius.md;
 
   return (
-    <TouchableOpacity
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ disabled }}
-      activeOpacity={0.8}
-      onPress={onPress}
-      onPressIn={() => setIsPressed(true)}
-      onPressOut={() => setIsPressed(false)}
-      disabled={disabled}
-      style={[
-        styles.base,
-        { width: size, height: size, borderRadius },
-        getVariantStyle(),
-        disabled && styles.disabled,
-        style,
-      ]}
-    >
-      {icon}
-    </TouchableOpacity>
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityState={{ disabled }}
+        activeOpacity={1}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        style={[
+          styles.base,
+          { width: size, height: size, borderRadius },
+          getVariantStyle(),
+          disabled && styles.disabled,
+          style,
+        ]}
+      >
+        {icon}
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
