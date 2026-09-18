@@ -178,22 +178,12 @@ export async function getDatabase(): Promise<IDatabase> {
     return dbInstance;
   }
 
-  let nativeDb: IDatabase | null = null;
-  try {
-    const SQLite = require('expo-sqlite');
-    nativeDb = await SQLite.openDatabaseAsync('english_corrector.db');
-  } catch (openError) {
-    console.warn('Failed to open native SQLite database, using WebStorage fallback:', openError);
-    dbInstance = new WebStorageDatabase();
-    return dbInstance;
-  }
-
-  if (nativeDb) {
-    dbInstance = nativeDb;
-    await nativeDb.execAsync(INITIAL_SCHEMA_SQL);
-    // Ensure columns exist in case of upgrading existing DB
-    await applyMigrations(nativeDb);
-  }
+  const SQLite = require('expo-sqlite');
+  const nativeDb = await SQLite.openDatabaseAsync('english_corrector.db');
+  await nativeDb.execAsync(INITIAL_SCHEMA_SQL);
+  // Ensure columns exist in case of upgrading existing DB
+  await applyMigrations(nativeDb);
+  dbInstance = nativeDb;
 
   return dbInstance as IDatabase;
 }

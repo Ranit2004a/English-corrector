@@ -31,6 +31,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     } catch (e) {
       console.warn('Error loading settings:', e);
       set({ isLoading: false });
+      throw e;
     }
   },
 

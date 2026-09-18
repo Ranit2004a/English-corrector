@@ -52,6 +52,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     } catch (e) {
       console.warn('Error loading user:', e);
       set({ isLoading: false });
+      throw e;
     }
   },
 
