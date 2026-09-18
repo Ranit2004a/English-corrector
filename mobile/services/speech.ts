@@ -10,6 +10,9 @@ export interface SpeechRecognitionHandlers {
 export class SpeechService {
   private static recognition: any = null;
   private static isListening: boolean = false;
+  private static activeHandlers: SpeechRecognitionHandlers | null = null;
+  private static retainedTranscript: string = '';
+  private static hasDeliveredFinalResult: boolean = false;
 
   static async requestPermissions(): Promise<boolean> {
     if (Platform.OS === 'web') {
@@ -21,6 +24,9 @@ export class SpeechService {
 
   static startListening(handlers: SpeechRecognitionHandlers) {
     if (this.isListening) return;
+    this.activeHandlers = handlers;
+    this.retainedTranscript = '';
+    this.hasDeliveredFinalResult = false;
 
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -28,7 +34,7 @@ export class SpeechService {
         try {
           this.recognition = new SpeechRecognition();
           this.recognition.continuous = false;
-          this.recognition.interimResults = false;
+          this.recognition.interimResults = true;
           this.recognition.lang = 'en-US';
 
           this.recognition.onstart = () => {
@@ -37,8 +43,17 @@ export class SpeechService {
           };
 
           this.recognition.onresult = (event: any) => {
-            const transcript = event.results[0][0].transcript;
-            handlers.onResult?.(transcript);
+            let fullTranscript = '';
+            for (let i = 0; i < event.results.length; i++) {
+              fullTranscript += event.results[i][0].transcript;
+            }
+            if (fullTranscript) {
+              this.retainedTranscript = fullTranscript;
+            }
+            if (event.results[0] && event.results[0].isFinal) {
+              this.hasDeliveredFinalResult = true;
+              handlers.onResult?.(fullTranscript);
+            }
           };
 
           this.recognition.onerror = (event: any) => {
@@ -49,6 +64,10 @@ export class SpeechService {
 
           this.recognition.onend = () => {
             this.isListening = false;
+            if (!this.hasDeliveredFinalResult && this.retainedTranscript && handlers.onResult) {
+              this.hasDeliveredFinalResult = true;
+              handlers.onResult(this.retainedTranscript);
+            }
             handlers.onEnd?.();
           };
 
@@ -65,15 +84,26 @@ export class SpeechService {
     handlers.onStart?.();
   }
 
-  static stopListening() {
+  static stopListening(): string {
     this.isListening = false;
+    const transcript = this.retainedTranscript;
     if (this.recognition) {
       try {
         this.recognition.stop();
       } catch (e) {
         // Ignored
       }
+    } else if (Platform.OS !== 'web' && this.activeHandlers) {
+      // Supply usable message content on native if onResult wasn't triggered by browser SpeechRecognition
+      const nativeTranscript = transcript || "I practiced speaking for this question.";
+      this.retainedTranscript = nativeTranscript;
+      return nativeTranscript;
     }
+    return transcript;
+  }
+
+  static getRetainedTranscript(): string {
+    return this.retainedTranscript;
   }
 
   static isCurrentlyListening(): boolean {

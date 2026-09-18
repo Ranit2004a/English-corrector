@@ -33,7 +33,7 @@ export const CorrectionCard: React.FC<CorrectionCardProps> = ({ correction }) =>
       await AudioRecorderService.stopAudio();
       setIsPlayingOriginal(false);
     } else {
-      TTSService.stop();
+      await TTSService.stop();
       setIsPlayingCorrected(false);
       setIsPlayingOriginal(true);
       await AudioRecorderService.playAudio(correction.audio_uri, {

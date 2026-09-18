@@ -33,9 +33,10 @@ export const SkillRadarChart: React.FC<SkillRadarChartProps> = ({
   const totalAxes = AXIS_LABELS.length;
 
   // Calculate coordinates for an angle and radius
-  const getCoordinates = (angleIndex: number, valueRatio: number) => {
+  const getCoordinates = (angleIndex: number, valueRatio: number, clamp: boolean = true) => {
     const angle = (angleIndex * 2 * Math.PI) / totalAxes - Math.PI / 2;
-    const r = radius * Math.max(0.1, Math.min(1.0, valueRatio));
+    const ratio = clamp ? Math.max(0.1, Math.min(1.0, valueRatio)) : valueRatio;
+    const r = radius * ratio;
     return {
       x: center + r * Math.cos(angle),
       y: center + r * Math.sin(angle),
@@ -163,7 +164,7 @@ export const SkillRadarChart: React.FC<SkillRadarChartProps> = ({
 
           {/* Axis Labels positioned around perimeter */}
           {AXIS_LABELS.map((item, i) => {
-            const pt = getCoordinates(i, 1.25);
+            const pt = getCoordinates(i, 1.25, false);
             return (
               <SvgText
                 key={`label-${i}`}

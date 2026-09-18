@@ -7,6 +7,7 @@ interface UserState {
   user: UserProfile | null;
   streak: number;
   todayMinutes: number;
+  todayFluency: number;
   dailyGoal: number;
   isLoading: boolean;
   
@@ -20,6 +21,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   user: null,
   streak: 7, // Initial default / loaded from DB
   todayMinutes: 0,
+  todayFluency: 80,
   dailyGoal: 15,
   isLoading: true,
 
@@ -43,6 +45,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         user,
         dailyGoal: user.daily_goal_minutes || 15,
         todayMinutes: progress.speaking_minutes,
+        todayFluency: progress.fluency_score ?? 80,
         streak: Math.max(1, streak),
         isLoading: false,
       });
@@ -75,6 +78,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     const streak = await ProgressRepository.getStreak();
     set({
       todayMinutes: progress.speaking_minutes,
+      todayFluency: progress.fluency_score ?? 80,
       streak: Math.max(1, streak),
     });
   }

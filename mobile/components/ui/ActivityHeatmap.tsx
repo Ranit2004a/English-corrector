@@ -23,6 +23,21 @@ interface DayItem {
 
 const WEEKDAY_NAMES = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
+const getLocalDateKey = (d: Date): string => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseLocalDate = (dateStr: string): Date => {
+  const parts = dateStr.split('-').map(Number);
+  if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+  return new Date(dateStr);
+};
+
 export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
   progressData = [],
   daysCount = 28,
@@ -41,7 +56,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
     for (let i = daysCount - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(now.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = getLocalDateKey(d);
       const rec = progressMap.get(dateStr);
 
       list.push({
@@ -86,7 +101,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
 
   const formatFullDate = (dateStr: string) => {
     try {
-      const d = new Date(dateStr);
+      const d = parseLocalDate(dateStr);
       return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     } catch {
       return dateStr;
@@ -159,7 +174,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
         <View style={[styles.legendBox, styles.tileLow]} />
         <View style={[styles.legendBox, styles.tileHigh]} />
         <View style={[styles.legendBox, styles.tileGoal]} />
-        <Text style={styles.legendLabel}>Goal (15m+)</Text>
+        <Text style={styles.legendLabel}>Goal ({dailyGoalMinutes}m+)</Text>
       </View>
 
       {/* Selected Day Inspection Drawer */}

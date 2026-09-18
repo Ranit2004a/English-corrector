@@ -93,7 +93,7 @@ export default function ProgressScreen() {
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(now.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
       const record = progressData.find((p) => p.date === dateStr);
       let minutes = record ? record.speaking_minutes : 0;

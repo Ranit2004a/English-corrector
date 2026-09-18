@@ -1,29 +1,32 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { View, StyleSheet, Platform } from 'react-native';
-import { Colors, NeuShadows, Radius, Typography } from '../../constants/theme';
+import { Radius, Typography } from '../../constants/theme';
+import { useTheme } from '../../constants/useTheme';
 import { Home, Mic, BarChart2, User } from 'lucide-react-native';
 
 export default function TabLayout() {
+  const { colors, shadows, isDark } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: Colors.surface,
-          borderTopColor: 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: colors.surface,
+          borderTopColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
           borderTopWidth: 1.5,
           height: Platform.OS === 'ios' ? 86 : 68,
           paddingBottom: Platform.OS === 'ios' ? 24 : 10,
           paddingTop: 10,
-          shadowColor: Colors.neuDarkDeep,
+          shadowColor: colors.neuDarkDeep,
           shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.25,
+          shadowOpacity: isDark ? 0.6 : 0.25,
           shadowRadius: 10,
           elevation: 12,
         },
-        tabBarActiveTintColor: Colors.primaryAccent,
-        tabBarInactiveTintColor: Colors.muted,
+        tabBarActiveTintColor: colors.primaryAccent,
+        tabBarInactiveTintColor: colors.muted,
         tabBarLabelStyle: {
           ...Typography.labelSm,
           fontWeight: '700',
@@ -36,7 +39,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.iconWrapper, focused && styles.iconWrapperActive]}>
+            <View style={[styles.iconWrapper, focused && [shadows.sunken, { backgroundColor: colors.surfaceSunken }]]}>
               <Home size={20} color={color} />
             </View>
           ),
@@ -47,7 +50,7 @@ export default function TabLayout() {
         options={{
           title: 'Practice',
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.iconWrapper, focused && styles.iconWrapperActive]}>
+            <View style={[styles.iconWrapper, focused && [shadows.sunken, { backgroundColor: colors.surfaceSunken }]]}>
               <Mic size={20} color={color} />
             </View>
           ),
@@ -58,7 +61,7 @@ export default function TabLayout() {
         options={{
           title: 'Progress',
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.iconWrapper, focused && styles.iconWrapperActive]}>
+            <View style={[styles.iconWrapper, focused && [shadows.sunken, { backgroundColor: colors.surfaceSunken }]]}>
               <BarChart2 size={20} color={color} />
             </View>
           ),
@@ -69,7 +72,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.iconWrapper, focused && styles.iconWrapperActive]}>
+            <View style={[styles.iconWrapper, focused && [shadows.sunken, { backgroundColor: colors.surfaceSunken }]]}>
               <User size={20} color={color} />
             </View>
           ),
@@ -86,9 +89,5 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  iconWrapperActive: {
-    ...NeuShadows.sunken,
-    backgroundColor: Colors.surfaceSunken,
   },
 });

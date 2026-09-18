@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle, TextStyle, StyleProp } from 'react-native';
-import { Colors, NeuShadows, Radius, Typography } from '../../constants/theme';
+import { Radius, Typography } from '../../constants/theme';
+import { useTheme } from '../../constants/useTheme';
 
 interface BadgeProps {
   label: string;
@@ -15,37 +16,80 @@ export const Badge: React.FC<BadgeProps> = ({
   style,
   textStyle,
 }) => {
-  const getVariantContainer = () => {
+  const { colors, shadows, isDark } = useTheme();
+
+  const getVariantContainer = (): StyleProp<ViewStyle> => {
     switch (variant) {
       case 'inverted':
-        return styles.inverted;
+        return {
+          backgroundColor: colors.primary,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.2)',
+          borderWidth: 1,
+          shadowColor: colors.neuDarkDeep,
+          shadowOffset: { width: 2, height: 2 },
+          shadowOpacity: isDark ? 0.8 : 0.5,
+          shadowRadius: 4,
+          elevation: 2,
+        };
       case 'accent':
-        return styles.accent;
+        return {
+          backgroundColor: colors.primaryAccent,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.3)',
+          borderWidth: 1,
+          shadowColor: colors.primaryAccent,
+          shadowOffset: { width: 2, height: 2 },
+          shadowOpacity: 0.35,
+          shadowRadius: 5,
+          elevation: 3,
+        };
       case 'error':
-        return styles.error;
+        return {
+          backgroundColor: colors.errorContainer,
+          borderWidth: 1,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.8)',
+          shadowColor: colors.errorNeuShadow,
+          shadowOffset: { width: 2, height: 2 },
+          shadowOpacity: 0.4,
+          shadowRadius: 4,
+        };
       case 'success':
-        return styles.success;
+        return {
+          backgroundColor: colors.successContainer,
+          borderWidth: 1,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.8)',
+          shadowColor: colors.successNeuShadow,
+          shadowOffset: { width: 2, height: 2 },
+          shadowOpacity: 0.4,
+          shadowRadius: 4,
+        };
       case 'sunken':
-        return styles.sunken;
+        return {
+          backgroundColor: colors.surfaceSunken,
+          borderWidth: 1,
+          borderColor: colors.neuSunkenBorder,
+        };
       default:
-        return styles.default;
+        return [
+          shadows.raisedSm,
+          { paddingVertical: 3 },
+        ];
     }
   };
 
-  const getVariantText = () => {
+  const getVariantText = (): StyleProp<TextStyle> => {
     switch (variant) {
       case 'inverted':
-        return styles.textInverted;
+        return { color: colors.onPrimary, fontWeight: '700' };
       case 'accent':
-        return styles.textAccent;
+        return { color: colors.onPrimaryAccent, fontWeight: '700' };
       case 'error':
-        return styles.textError;
+        return { color: colors.onErrorContainer, fontWeight: '700' };
       case 'success':
-        return styles.textSuccess;
+        return { color: colors.onSuccessContainer, fontWeight: '700' };
       case 'sunken':
-        return styles.textSunken;
+        return { color: colors.muted, fontWeight: '600' };
       default:
-        return styles.textDefault;
+        return { color: colors.onSurfaceVariant, fontWeight: '700' };
     }
   };
 
@@ -65,79 +109,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'flex-start',
   },
-  default: {
-    ...NeuShadows.raisedSm,
-    paddingVertical: 3,
-  },
-  inverted: {
-    backgroundColor: Colors.primary,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    borderWidth: 1,
-    shadowColor: Colors.neuDarkDeep,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  accent: {
-    backgroundColor: Colors.primaryAccent,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    borderWidth: 1,
-    shadowColor: Colors.primaryAccent,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.35,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  error: {
-    backgroundColor: Colors.errorContainer,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
-    shadowColor: Colors.errorNeuShadow,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-  },
-  success: {
-    backgroundColor: Colors.successContainer,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
-    shadowColor: Colors.successNeuShadow,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-  },
-  sunken: {
-    backgroundColor: Colors.surfaceSunken,
-    borderWidth: 1,
-    borderColor: Colors.neuSunkenBorder,
-  },
   label: {
     ...Typography.labelSm,
     textTransform: 'uppercase',
-  },
-  textDefault: {
-    color: Colors.onSurfaceVariant,
-    fontWeight: '700',
-  },
-  textInverted: {
-    color: Colors.onPrimary,
-    fontWeight: '700',
-  },
-  textAccent: {
-    color: Colors.onPrimaryAccent,
-    fontWeight: '700',
-  },
-  textError: {
-    color: Colors.onErrorContainer,
-    fontWeight: '700',
-  },
-  textSuccess: {
-    color: Colors.onSuccessContainer,
-    fontWeight: '700',
-  },
-  textSunken: {
-    color: Colors.muted,
-    fontWeight: '600',
   },
 });

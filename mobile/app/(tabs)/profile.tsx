@@ -214,6 +214,9 @@ export default function ProfileScreen() {
             </View>
 
             <TouchableOpacity
+              accessibilityRole="switch"
+              accessibilityLabel="Dark Titanium Theme"
+              accessibilityState={{ checked: !!settings.dark_mode }}
               activeOpacity={0.8}
               onPress={() => {
                 HapticService.impactMedium();
@@ -246,6 +249,9 @@ export default function ProfileScreen() {
             </View>
 
             <TouchableOpacity
+              accessibilityRole="switch"
+              accessibilityLabel="Tactile Haptic Feedback"
+              accessibilityState={{ checked: !!settings.haptic_feedback }}
               activeOpacity={0.8}
               onPress={() => {
                 const next = !settings.haptic_feedback;

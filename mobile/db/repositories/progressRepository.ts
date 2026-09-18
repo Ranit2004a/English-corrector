@@ -1,9 +1,21 @@
 import { getDatabase } from '../database';
 import { DailyProgress } from '../../types';
 
+const getLocalDateKey = (d: Date = new Date()): string => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseLocalDateKey = (dateStr: string): Date => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, (month || 1) - 1, day || 1, 0, 0, 0, 0);
+};
+
 export const ProgressRepository = {
   async getTodayProgress(): Promise<DailyProgress> {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateKey(new Date());
     const db = await getDatabase();
     const row = await db.getFirstAsync<any>(`SELECT * FROM progress WHERE date = ?;`, [today]);
     
@@ -107,8 +119,7 @@ export const ProgressRepository = {
     today.setHours(0, 0, 0, 0);
 
     for (let i = 0; i < rows.length; i++) {
-      const d = new Date(rows[i].date);
-      d.setHours(0, 0, 0, 0);
+      const d = parseLocalDateKey(rows[i].date);
       const diffDays = Math.round((today.getTime() - d.getTime()) / (1000 * 3600 * 24));
       
       if (diffDays === streak || (streak === 0 && diffDays === 1)) {

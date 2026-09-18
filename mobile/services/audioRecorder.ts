@@ -131,6 +131,9 @@ export class AudioRecorderService {
             try {
               const audioBlob = new Blob(this.webAudioChunks, { type: 'audio/webm' });
               const audioUrl = URL.createObjectURL(audioBlob);
+              if (audioUrl) {
+                this.sessionAudioUris.add(audioUrl);
+              }
               // Stop all audio tracks
               if (this.webMediaRecorder.stream) {
                 this.webMediaRecorder.stream.getTracks().forEach((track: any) => track.stop());

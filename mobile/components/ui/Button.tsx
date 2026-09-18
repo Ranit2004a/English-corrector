@@ -43,66 +43,66 @@ export const Button: React.FC<ButtonProps> = ({
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const getContainerStyle = () => {
-    if (isPressed) {
-      return [shadows.sunken, { transform: [{ translateY: 1 }] }];
-    }
+    let variantBgAndBorder: any;
+    let variantShadow: any;
+
     switch (variant) {
       case 'accent':
-        return [
-          shadows.accentRaised,
-          {
-            backgroundColor: colors.primaryAccent,
-            borderColor: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.35)',
-            borderWidth: 1,
-          },
-        ];
+        variantShadow = shadows.accentRaised;
+        variantBgAndBorder = {
+          backgroundColor: colors.primaryAccent,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.35)',
+          borderWidth: 1,
+        };
+        break;
       case 'secondary':
-        return [
-          shadows.raisedSm,
-          {
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.9)',
-          },
-        ];
+        variantShadow = shadows.raisedSm;
+        variantBgAndBorder = {
+          backgroundColor: colors.surface,
+          borderWidth: 1,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.9)',
+        };
+        break;
       case 'outline':
-        return [
-          shadows.raisedSm,
-          {
-            backgroundColor: colors.surfaceSubtle,
-            borderWidth: 1.5,
-            borderColor: colors.neuDark,
-          },
-        ];
+        variantShadow = shadows.raisedSm;
+        variantBgAndBorder = {
+          backgroundColor: colors.surfaceSubtle,
+          borderWidth: 1.5,
+          borderColor: colors.neuDark,
+        };
+        break;
       case 'danger':
-        return [
-          shadows.raisedSm,
-          {
-            backgroundColor: colors.errorContainer,
-            borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.8)',
-          },
-        ];
+        variantShadow = shadows.raisedSm;
+        variantBgAndBorder = {
+          backgroundColor: colors.errorContainer,
+          borderWidth: 1,
+          borderColor: 'rgba(255, 255, 255, 0.8)',
+        };
+        break;
       case 'sunken':
-        return [
-          shadows.sunken,
-          {
-            backgroundColor: colors.surfaceSunken,
-            borderWidth: 1,
-            borderColor: colors.neuSunkenBorder,
-          },
-        ];
+        variantShadow = shadows.sunken;
+        variantBgAndBorder = {
+          backgroundColor: colors.surfaceSunken,
+          borderWidth: 1,
+          borderColor: colors.neuSunkenBorder,
+        };
+        break;
       default:
         // Primary
-        return [
-          shadows.raised,
-          {
-            backgroundColor: colors.primary,
-            borderColor: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.25)',
-            borderWidth: 1,
-          },
-        ];
+        variantShadow = shadows.raised;
+        variantBgAndBorder = {
+          backgroundColor: colors.primary,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.25)',
+          borderWidth: 1,
+        };
+        break;
     }
+
+    if (isPressed) {
+      return [shadows.sunken, variantBgAndBorder, { transform: [{ translateY: 1 }] }];
+    }
+
+    return [variantShadow, variantBgAndBorder];
   };
 
   const getTextStyle = () => {

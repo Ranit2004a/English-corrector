@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish, isReady = 
   const textTranslateY = useRef(new Animated.Value(12)).current;
   const containerOpacity = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
+  const exitTriggered = useRef(false);
+  const pulseLoopRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
     // 1. Entrance animation sequence
@@ -76,21 +80,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish, isReady = 
         }),
       ])
     );
+    pulseLoopRef.current = pulseLoop;
     pulseLoop.start();
 
-    // 2. Minimum display time before completing
+    // 2. Minimum display time (2 seconds)
     const timer = setTimeout(() => {
-      Animated.timing(containerOpacity, {
-        toValue: 0,
-        duration: 450,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }).start(() => {
-        pulseLoop.stop();
-        if (onFinish) {
-          onFinish();
-        }
-      });
+      setMinTimeElapsed(true);
     }, 2000);
 
     return () => {
@@ -98,6 +93,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish, isReady = 
       pulseLoop.stop();
     };
   }, []);
+
+  useEffect(() => {
+    if (minTimeElapsed && isReady && !exitTriggered.current) {
+      exitTriggered.current = true;
+      Animated.timing(containerOpacity, {
+        toValue: 0,
+        duration: 450,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }).start(() => {
+        pulseLoopRef.current?.stop();
+        if (onFinish) {
+          onFinish();
+        }
+      });
+    }
+  }, [minTimeElapsed, isReady, onFinish]);
 
   return (
     <Animated.View style={[styles.container, { opacity: containerOpacity }]}>

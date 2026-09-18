@@ -49,10 +49,10 @@ class SessionSummaryRequest(BaseModel):
 
 
 class SessionEvaluationAI(BaseModel):
-    grammar_score: int = Field(description="0-100 score evaluating grammatical accuracy")
-    vocabulary_score: int = Field(description="0-100 score evaluating lexical variety and appropriateness")
-    fluency_score: int = Field(description="0-100 score evaluating conversational flow and sentence continuity")
-    overall_score: int = Field(description="0-100 combined overall score")
+    grammar_score: int = Field(ge=0, le=100, description="0-100 score evaluating grammatical accuracy")
+    vocabulary_score: int = Field(ge=0, le=100, description="0-100 score evaluating lexical variety and appropriateness")
+    fluency_score: int = Field(ge=0, le=100, description="0-100 score evaluating conversational flow and sentence continuity")
+    overall_score: int = Field(ge=0, le=100, description="0-100 combined overall score")
     top_improvement: str = Field(description="1 actionable key lesson or grammar rule to practice")
     new_words: List[str] = Field(default_factory=list, description="3-4 useful CEFR-level vocabulary words discovered")
     encouragement: str = Field(description="1-sentence warm personalized encouragement")
@@ -63,10 +63,10 @@ class SessionSummaryResponse(BaseModel):
     duration_minutes: int
     messages_count: int
     corrections_count: int
-    grammar_score: int = Field(description="0-100 score")
-    vocabulary_score: int = Field(description="0-100 score")
-    fluency_score: int = Field(description="0-100 score")
-    overall_score: int = Field(description="0-100 score")
+    grammar_score: int = Field(ge=0, le=100, description="0-100 score")
+    vocabulary_score: int = Field(ge=0, le=100, description="0-100 score")
+    fluency_score: int = Field(ge=0, le=100, description="0-100 score")
+    overall_score: int = Field(ge=0, le=100, description="0-100 score")
     top_improvement: str = Field(description="Key lesson or pattern to focus on")
     new_words: List[str] = Field(default_factory=list, description="High-value vocabulary words discovered during the session")
     encouragement: str = Field(description="Personalized warm closing encouragement")

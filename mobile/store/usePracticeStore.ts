@@ -164,9 +164,9 @@ export const usePracticeStore = create<PracticeStateStore>((set, get) => ({
     const { currentSession, timerSeconds, messages, corrections } = get();
     if (!currentSession) return null;
 
-    TTSService.stop();
-    AudioRecorderService.stopAudio();
-    AudioRecorderService.stopRecording();
+    await TTSService.stop();
+    await AudioRecorderService.stopAudio();
+    await AudioRecorderService.stopRecording();
 
     try {
       // Generate summary from backend or local calculator
@@ -227,8 +227,19 @@ export const usePracticeStore = create<PracticeStateStore>((set, get) => ({
       return summary;
     } catch (e) {
       console.warn('Failed to summarize session cleanly:', e);
-      // Clean up audio files even on error
+      // Clean up audio references from SQLite and files from device storage
+      if (currentSession?.id) {
+        await MessageRepository.clearSessionAudio(currentSession.id);
+        await CorrectionRepository.clearSessionAudio(currentSession.id);
+      }
       await AudioRecorderService.cleanupSessionAudio();
+      const sanitizedMessages = messages.map(m => ({ ...m, audio_uri: undefined }));
+      const sanitizedCorrections = corrections.map(c => ({ ...c, audio_uri: undefined }));
+      set({
+        messages: sanitizedMessages,
+        corrections: sanitizedCorrections,
+        practiceState: 'IDLE',
+      });
       return null;
     }
   },
@@ -258,9 +269,9 @@ export const usePracticeStore = create<PracticeStateStore>((set, get) => ({
 
   resetSession: async () => {
     const { currentSession } = get();
-    TTSService.stop();
-    AudioRecorderService.stopAudio();
-    AudioRecorderService.stopRecording();
+    await TTSService.stop();
+    await AudioRecorderService.stopAudio();
+    await AudioRecorderService.stopRecording();
 
     // Delete recorded audio files and nullify in DB
     await AudioRecorderService.cleanupSessionAudio();

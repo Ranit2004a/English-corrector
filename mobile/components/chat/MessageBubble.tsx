@@ -27,8 +27,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
     }
   };
 
-  const handleSpeak = () => {
+  const handleSpeak = async () => {
     HapticService.selection();
+    await AudioRecorderService.stopAudio();
+    setIsPlayingUserVoice(false);
     TTSService.speak(message.text);
   };
 
@@ -41,6 +43,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, correctio
       setIsPlayingUserVoice(false);
     } else {
       setIsPlayingUserVoice(true);
+      await TTSService.stop();
       await AudioRecorderService.playAudio(message.audio_uri, {
         onStart: () => setIsPlayingUserVoice(true),
         onFinish: () => setIsPlayingUserVoice(false),

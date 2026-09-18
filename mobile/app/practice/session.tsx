@@ -72,13 +72,26 @@ export default function PracticeSessionScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const isSubmittingVoice = useRef(false);
+
   const handleToggleVoice = async () => {
     HapticService.impactMedium();
     if (practiceState === 'LISTENING') {
-      SpeechService.stopListening();
+      const transcript = SpeechService.stopListening();
       const audioUri = await AudioRecorderService.stopRecording();
       setPracticeState('IDLE');
+
+      if (!isSubmittingVoice.current && (audioUri || (transcript && transcript.trim()))) {
+        isSubmittingVoice.current = true;
+        const textToSend = transcript && transcript.trim()
+          ? transcript.trim()
+          : (textInput.trim() || 'I practiced speaking for this question.');
+        HapticService.notificationSuccess();
+        await sendMessage(textToSend, audioUri || undefined);
+        isSubmittingVoice.current = false;
+      }
     } else if (practiceState === 'IDLE') {
+      isSubmittingVoice.current = false;
       // Start recording user audio
       await AudioRecorderService.startRecording();
 
@@ -87,10 +100,13 @@ export default function PracticeSessionScreen() {
           setPracticeState('LISTENING');
         },
         onResult: async (transcript) => {
+          if (isSubmittingVoice.current) return;
           const audioUri = await AudioRecorderService.stopRecording();
           if (transcript && transcript.trim()) {
+            isSubmittingVoice.current = true;
             HapticService.notificationSuccess();
-            sendMessage(transcript, audioUri || undefined);
+            await sendMessage(transcript.trim(), audioUri || undefined);
+            isSubmittingVoice.current = false;
           }
         },
         onError: async (err) => {

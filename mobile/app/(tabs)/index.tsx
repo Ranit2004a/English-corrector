@@ -23,7 +23,7 @@ import {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, streak, todayMinutes, dailyGoal, refreshProgress } = useUserStore();
+  const { user, streak, todayMinutes, todayFluency, dailyGoal, refreshProgress } = useUserStore();
   const startSession = usePracticeStore((state) => state.startSession);
 
   useEffect(() => {
@@ -135,8 +135,8 @@ export default function HomeScreen() {
               onPress={() => router.push('/(tabs)/progress')}
             >
               <Text style={styles.metricLabel}>Time Spoken</Text>
-              <Text style={styles.metricValue}>{todayMinutes + 45}m</Text>
-              <Text style={styles.metricSub}>this week</Text>
+              <Text style={styles.metricValue}>{todayMinutes}m</Text>
+              <Text style={styles.metricSub}>today</Text>
             </NeuCard>
 
             <NeuCard
@@ -145,7 +145,7 @@ export default function HomeScreen() {
               onPress={() => router.push('/(tabs)/progress')}
             >
               <Text style={styles.metricLabel}>Fluency</Text>
-              <Text style={styles.metricValue}>88%</Text>
+              <Text style={styles.metricValue}>{todayFluency}%</Text>
               <Text style={styles.metricSub}>Consistent</Text>
             </NeuCard>
 

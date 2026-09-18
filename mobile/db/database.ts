@@ -145,6 +145,29 @@ function col_key(row: any) {
   return row.key || row.date || row.word || null;
 }
 
+function isDuplicateColumnError(error: any): boolean {
+  const message = error?.message || String(error || '');
+  return /duplicate column/i.test(message);
+}
+
+async function applyMigrations(db: IDatabase): Promise<void> {
+  try {
+    await db.execAsync('ALTER TABLE messages ADD COLUMN audio_uri TEXT;');
+  } catch (e: any) {
+    if (!isDuplicateColumnError(e)) {
+      throw e;
+    }
+  }
+
+  try {
+    await db.execAsync('ALTER TABLE corrections ADD COLUMN audio_uri TEXT;');
+  } catch (e: any) {
+    if (!isDuplicateColumnError(e)) {
+      throw e;
+    }
+  }
+}
+
 export async function getDatabase(): Promise<IDatabase> {
   if (dbInstance) {
     return dbInstance;
@@ -155,40 +178,31 @@ export async function getDatabase(): Promise<IDatabase> {
     return dbInstance;
   }
 
+  let nativeDb: IDatabase | null = null;
   try {
     const SQLite = require('expo-sqlite');
-    dbInstance = await SQLite.openDatabaseAsync('english_corrector.db');
-    if (dbInstance) {
-      await dbInstance.execAsync(INITIAL_SCHEMA_SQL);
-      // Ensure columns exist in case of upgrading existing DB
-      try {
-        await dbInstance.execAsync('ALTER TABLE messages ADD COLUMN audio_uri TEXT;');
-      } catch (e) {
-        // Column already exists
-      }
-      try {
-        await dbInstance.execAsync('ALTER TABLE corrections ADD COLUMN audio_uri TEXT;');
-      } catch (e) {
-        // Column already exists
-      }
-    }
-    return dbInstance as IDatabase;
-  } catch (error) {
-    console.warn('Failed to open native SQLite database, using WebStorage fallback:', error);
+    nativeDb = await SQLite.openDatabaseAsync('english_corrector.db');
+  } catch (openError) {
+    console.warn('Failed to open native SQLite database, using WebStorage fallback:', openError);
     dbInstance = new WebStorageDatabase();
     return dbInstance;
   }
+
+  if (nativeDb) {
+    dbInstance = nativeDb;
+    await nativeDb.execAsync(INITIAL_SCHEMA_SQL);
+    // Ensure columns exist in case of upgrading existing DB
+    await applyMigrations(nativeDb);
+  }
+
+  return dbInstance as IDatabase;
 }
 
 export async function initDatabase(): Promise<void> {
   const db = await getDatabase();
   if (Platform.OS !== 'web' && db.execAsync) {
     await db.execAsync(INITIAL_SCHEMA_SQL);
-    try {
-      await db.execAsync('ALTER TABLE messages ADD COLUMN audio_uri TEXT;');
-    } catch (e) {}
-    try {
-      await db.execAsync('ALTER TABLE corrections ADD COLUMN audio_uri TEXT;');
-    } catch (e) {}
+    await applyMigrations(db);
   }
 }
+

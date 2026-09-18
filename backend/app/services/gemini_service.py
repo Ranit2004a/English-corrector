@@ -262,19 +262,20 @@ class GeminiService:
 
             cleaned = self._clean_json_text(raw_text)
             data = json.loads(cleaned)
+            evaluation = SessionEvaluationAI.model_validate(data)
 
             return SessionSummaryResponse(
                 session_id=session_id,
                 duration_minutes=duration_minutes,
                 messages_count=messages_count,
                 corrections_count=corrections_count,
-                grammar_score=int(data.get("grammar_score", 80)),
-                vocabulary_score=int(data.get("vocabulary_score", 80)),
-                fluency_score=int(data.get("fluency_score", 80)),
-                overall_score=int(data.get("overall_score", 80)),
-                top_improvement=data.get("top_improvement", "Continue practicing natural sentence transitions."),
-                new_words=data.get("new_words", ["articulate", "context", "expression"]),
-                encouragement=data.get("encouragement", "Great progress today! Keep building your speaking confidence.")
+                grammar_score=evaluation.grammar_score,
+                vocabulary_score=evaluation.vocabulary_score,
+                fluency_score=evaluation.fluency_score,
+                overall_score=evaluation.overall_score,
+                top_improvement=evaluation.top_improvement,
+                new_words=evaluation.new_words or ["articulate", "context", "expression"],
+                encouragement=evaluation.encouragement
             )
         except Exception as e:
             logger.error(f"Gemini session summary failed: {e}")
